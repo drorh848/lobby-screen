@@ -143,6 +143,7 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
 #toast{position:fixed;bottom:calc(100px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);opacity:0;
   background:#24324f;padding:12px 20px;border-radius:12px;font-weight:600;transition:.3s;z-index:90;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%)}
+.top-actions{display:flex;gap:8px}
 </style>
 </head>
 <body>
@@ -167,7 +168,10 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
       <div class="t-name" id="topName"></div>
       <div class="status" id="screenStatus">⚪ בודק חיבור מסך…</div>
     </div>
-    <button class="icon-btn" id="logoutBtn" title="יציאה">⎋</button>
+    <div class="top-actions">
+      <button class="icon-btn hidden" id="fsBtn" title="מסך מלא">⛶</button>
+      <button class="icon-btn" id="logoutBtn" title="יציאה">⎋</button>
+    </div>
   </header>
   <nav class="tabs">
     <button class="tab active" data-tab="msgs">📋 הודעות</button>
@@ -344,6 +348,34 @@ function enter() {
   base.child('status/lastSeen').on('value', s => { lastSeen = s.val() || 0; renderStatus(); });
   setInterval(renderStatus, 30000);
   setInterval(renderList, 60000);
+}
+
+/* ===== מסך מלא ===== */
+function fsElement() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+function fsSupported() { const el = document.documentElement; return !!(el.requestFullscreen || el.webkitRequestFullscreen); }
+function enterFullscreen() {
+  if (fsElement()) return;
+  const el = document.documentElement;
+  try {
+    const r = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : el.webkitRequestFullscreen();
+    if (r && r.catch) r.catch(() => {});
+  } catch (e) {}
+}
+function exitFullscreen() {
+  try { const r = document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen(); if (r && r.catch) r.catch(() => {}); } catch (e) {}
+}
+function updateFsBtn() { $('#fsBtn').textContent = fsElement() ? '🗗' : '⛶'; }
+if (fsSupported()) {
+  $('#fsBtn').classList.remove('hidden');
+  $('#fsBtn').addEventListener('click', e => { e.stopPropagation(); fsElement() ? exitFullscreen() : enterFullscreen(); });
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, updateFsBtn));
+  // נגיעה ראשונה אחרי הכניסה מעבירה למסך מלא (פעם אחת בלבד)
+  let fsAuto = false;
+  document.addEventListener('click', () => {
+    if (fsAuto || !entered) return;
+    fsAuto = true;
+    enterFullscreen();
+  });
 }
 
 /* ===== סטטוס מסך ===== */

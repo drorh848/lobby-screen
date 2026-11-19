@@ -148,6 +148,13 @@ body.night #nightVeil{opacity:.6}
 #rotateHint{display:none;position:fixed;inset:0;z-index:70;background:var(--bg1);color:var(--gold2);flex-direction:column;align-items:center;justify-content:center;gap:16px;font-size:20px;text-align:center;padding:24px}
 #rotateHint b{font-size:60px}
 @media (orientation:portrait){ body.started #rotateHint{display:flex} }
+
+/* ===== מסך מלא ===== */
+#fsHint{position:fixed;left:2vw;bottom:9vh;z-index:65;display:none;align-items:center;gap:.6em;padding:.7em 1.2em;border-radius:2em;
+  background:rgba(10,17,32,.88);border:1px solid rgba(214,174,98,.5);color:var(--gold2);font-size:max(14px,calc(1.3 * var(--u)));font-weight:600;
+  box-shadow:0 .5em 1.5em rgba(0,0,0,.4);animation:fsPulse 2.4s ease-in-out infinite}
+body.started.fs-off #fsHint{display:flex}
+@keyframes fsPulse{50%{border-color:rgba(214,174,98,1)}}
 .lic-logo{font-size:56px}
 .lic-box h1{font-size:28px;margin:10px 0 6px;color:var(--gold2)}
 .lic-box p{color:var(--muted);font-size:16px;margin-bottom:20px}
@@ -253,6 +260,8 @@ body.night #nightVeil{opacity:.6}
     </div>
   </div>
 </div>
+
+<div id="fsHint">⛶ <span id="fsHintText">לחץ OK בשלט למסך מלא</span></div>
 
 <div id="rotateHint"><b>📱↻</b>סובב את הטלפון לרוחב<br>כדי לראות את מסך הלובי</div>
 
@@ -808,6 +817,44 @@ function burnShift() {   // הגנה מצריבת מסך
   $('#app').style.transform = `translate(${r(-6, 6)}px, ${r(-4, 4)}px)`;
 }
 
+
+/* =========================================================
+   מסך מלא – לחיצה על OK בשלט / נגיעה במסך
+   ========================================================= */
+function fsElement() {
+  return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
+}
+function fsSupported() {
+  const el = document.documentElement;
+  return !!(el.requestFullscreen || el.webkitRequestFullscreen || el.webkitRequestFullScreen || el.mozRequestFullScreen || el.msRequestFullscreen);
+}
+function enterFullscreen() {
+  if (fsElement()) return;
+  const el = document.documentElement;
+  try {
+    const r = (el.requestFullscreen && el.requestFullscreen({ navigationUI: 'hide' })) ||
+              (el.webkitRequestFullscreen && el.webkitRequestFullscreen()) ||
+              (el.webkitRequestFullScreen && el.webkitRequestFullScreen()) ||
+              (el.mozRequestFullScreen && el.mozRequestFullScreen()) ||
+              (el.msRequestFullscreen && el.msRequestFullscreen());
+    if (r && r.catch) r.catch(() => {});
+  } catch (e) {}
+}
+function updateFsState() {
+  document.body.classList.toggle('fs-off', fsSupported() && !fsElement());
+}
+function initFullscreen() {
+  if (!fsSupported()) return;               // דפדפן בלי תמיכה – לא מציגים הודעה
+  if ('ontouchstart' in window) $('#fsHintText').textContent = 'גע במסך למסך מלא';
+  ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange']
+    .forEach(ev => document.addEventListener(ev, updateFsState));
+  const go = () => { if (started) enterFullscreen(); };
+  document.addEventListener('keydown', go);    // OK / חצים בשלט
+  document.addEventListener('click', go);
+  document.addEventListener('touchend', go, { passive: true });
+  updateFsState();
+}
+
 /* =========================================================
    הפעלה
    ========================================================= */
@@ -817,6 +864,7 @@ function start() {
   started = true;
   $('#license').classList.remove('show');
   document.body.classList.add('started');
+  initFullscreen();
   applySettings({});
   tick(); setInterval(tick, 1000);
 
