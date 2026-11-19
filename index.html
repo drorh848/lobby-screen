@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מסך לובי – בן גוריון 62 א</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#0a1120;--bg2:#121c33;--card:rgba(255,255,255,.055);--line:rgba(255,255,255,.10);
+  --text:#f2f4f9;--muted:#93a0ba;--gold:#d6ae62;--gold2:#f1d595;--imp:#3d9bff;--urg:#ff4458;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{
+  font-family:'Heebo',Arial,sans-serif;color:var(--text);cursor:none;-webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(ellipse 70% 60% at 85% 0%,#1c2b50 0%,transparent 60%),
+    radial-gradient(ellipse 60% 60% at 0% 100%,#2a1d40 0%,transparent 60%),
+    linear-gradient(160deg,var(--bg1),var(--bg2));
+}
+#app{position:absolute;inset:0;display:grid;grid-template-rows:auto 1fr auto;gap:2vh;padding:2.6vh 2.4vw 0;transition:transform 3s ease}
+
+/* ===== כותרת ===== */
+header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:2vw}
+.brand .name{font-size:3.2vw;font-weight:800;color:var(--gold2);line-height:1.1}
+.brand .sub{font-size:1.35vw;color:var(--muted);margin-top:.4vh}
+.clock{text-align:center}
+#time{font-size:6.2vw;font-weight:300;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.02em;direction:ltr}
+#sec{font-size:2.2vw;color:var(--gold);margin-left:.4vw;vertical-align:top}
+.dates{text-align:left}
+#gdate{font-size:1.65vw;font-weight:500}
+#hdate{font-size:1.5vw;color:var(--gold);margin-top:.5vh}
+
+/* ===== אזור ראשי ===== */
+main{display:grid;grid-template-columns:35% 1fr;gap:1.6vw;min-height:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:1.4vw;box-shadow:0 1vw 3vw rgba(0,0,0,.25)}
+.col-weather{display:flex;flex-direction:column;gap:1.6vh;min-height:0}
+
+.weather{flex:1;padding:2.2vh 1.6vw;display:flex;flex-direction:column;justify-content:space-between;min-height:0}
+.w-now{display:flex;align-items:center;gap:1.4vw}
+.w-icon{font-size:6.5vw;line-height:1;filter:drop-shadow(0 .5vw 1vw rgba(0,0,0,.35))}
+.w-temp{font-size:5.4vw;font-weight:300;line-height:1}
+.w-desc{font-size:1.7vw;font-weight:500;margin-top:.4vh}
+.w-range{font-size:1.25vw;color:var(--muted);margin-top:.3vh}
+.w-tip{font-size:1.2vw;color:var(--gold2);margin-top:.6vh;min-height:1.3em}
+.w-details{display:grid;grid-template-columns:repeat(3,1fr);gap:.8vw;margin:1.4vh 0}
+.w-details div{background:rgba(255,255,255,.04);border-radius:.8vw;padding:1vh .6vw;text-align:center}
+.w-details span{display:block;font-size:1vw;color:var(--muted)}
+.w-details b{font-size:1.5vw;font-weight:600}
+.forecast{display:grid;grid-template-columns:repeat(5,1fr);gap:.6vw;border-top:1px solid var(--line);padding-top:1.6vh}
+.f-day{text-align:center}
+.f-name{font-size:1.1vw;color:var(--muted)}
+.f-icon{font-size:2.4vw;margin:.4vh 0}
+.f-temps{font-size:1.2vw}.f-temps b{font-weight:700}.f-temps span{color:var(--muted)}
+.f-rain{font-size:.95vw;color:#7cc4ff;min-height:1.3em}
+
+.shabbat{padding:1.8vh 1.6vw;background:linear-gradient(135deg,rgba(214,174,98,.16),rgba(214,174,98,.04));border-color:rgba(214,174,98,.35)}
+.shabbat.hidden{display:none}
+.s-title{font-size:1.6vw;font-weight:700;color:var(--gold2);margin-bottom:1vh}
+.s-rows{display:grid;grid-template-columns:1fr 1fr;gap:1vw}
+.s-rows span{display:block;font-size:1.05vw;color:var(--muted)}
+.s-rows b{font-size:1.9vw;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ===== לוח מודעות ===== */
+.board{display:flex;flex-direction:column;padding:2.2vh 1.8vw 1.6vh;min-height:0}
+.board-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.6vh}
+.board-title{font-size:1.8vw;font-weight:700;color:var(--gold2)}
+.dots{display:flex;gap:.5vw;align-items:center}
+.dots i{display:block;width:.7vw;height:.7vw;border-radius:1vw;background:rgba(255,255,255,.2);transition:all .4s}
+.dots i.on{background:var(--gold);width:1.8vw}
+.stage{position:relative;flex:1;min-height:0}
+
+.msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:3vh 3vw;border-radius:1.2vw;border:.2vw solid transparent;background:rgba(255,255,255,.03);
+  animation:inSlide .9s cubic-bezier(.2,.8,.2,1) both}
+.msg-icon{font-size:6vw;line-height:1;margin-bottom:2vh}
+.msg-title{font-size:3.6vw;font-weight:800;line-height:1.15;margin-bottom:2vh}
+.msg-body{font-size:2.2vw;line-height:1.5;color:#d9deea;max-width:92%;white-space:pre-line}
+.msg.long .msg-title{font-size:3vw}
+.msg.long .msg-body{font-size:1.8vw}
+.msg-meta{position:absolute;bottom:1.6vh;left:0;right:0;font-size:1.1vw;color:var(--muted)}
+.badge{position:absolute;top:2vh;right:2vw;font-size:1.3vw;font-weight:800;padding:.5vh 1.2vw;border-radius:2vw;letter-spacing:.05em;color:#fff}
+.badge.important{background:var(--imp)}
+.badge.urgent{background:var(--urg);animation:blink .55s steps(1) 6}
+
+.msg.important{border-color:rgba(61,155,255,.6);animation:inSlide .9s cubic-bezier(.2,.8,.2,1) both,glowBlue 1.2s ease-in-out .9s 3}
+.msg.important .msg-icon{animation:pop .6s ease .9s 3}
+.msg.urgent{border-color:var(--urg);background:rgba(255,68,88,.08);animation:inZoom .7s cubic-bezier(.2,1.3,.4,1) both,glowRed 1s ease-in-out .7s 4}
+.msg.urgent .msg-title{color:#ff8a96}
+.msg.out{animation:outFade .6s ease forwards !important}
+
+.progress{height:.45vh;background:rgba(255,255,255,.08);border-radius:1vh;margin-top:1.4vh;overflow:hidden}
+#progBar{height:100%;width:0;background:linear-gradient(90deg,var(--gold2),var(--gold))}
+
+@keyframes inSlide{from{opacity:0;transform:translateX(-8%)}to{opacity:1;transform:none}}
+@keyframes inZoom{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+@keyframes outFade{to{opacity:0;transform:translateX(8%)}}
+@keyframes glowBlue{0%,100%{box-shadow:0 0 0 0 rgba(61,155,255,0)}50%{box-shadow:0 0 3vw .5vw rgba(61,155,255,.8)}}
+@keyframes glowRed{0%,100%{box-shadow:0 0 0 0 rgba(255,68,88,0)}50%{box-shadow:0 0 3.5vw .6vw rgba(255,68,88,.85)}}
+@keyframes pop{50%{transform:scale(1.2)}}
+@keyframes blink{50%{opacity:0}}
+
+/* ===== טיקר חדשות ===== */
+footer{display:flex;align-items:stretch;height:7.5vh;margin:0 -2.4vw;background:rgba(0,0,0,.4);border-top:.25vh solid var(--gold)}
+.t-label{display:flex;align-items:center;gap:.7vw;padding:0 1.6vw;background:#c8102e;font-size:1.6vw;font-weight:800;white-space:nowrap}
+.live{width:.8vw;height:.8vw;border-radius:50%;background:#fff;animation:blink 1.2s steps(1) infinite}
+.t-track{position:relative;flex:1;overflow:hidden}
+.ticker-inner{position:absolute;right:0;top:0;height:100%;display:flex;align-items:center;white-space:nowrap;font-size:1.9vw;font-weight:500;will-change:transform}
+.t-item{padding:0 1.2vw}
+.t-sep{color:var(--gold);font-size:1vw}
+.t-status{display:flex;align-items:center;padding:0 1.2vw;font-size:1vw;color:#ffb44d;white-space:nowrap}
+.t-status:empty{display:none}
+
+/* ===== מצב לילה ===== */
+#nightVeil{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 3s;z-index:40}
+body.night #nightVeil{opacity:.6}
+
+/* ===== השתלטות הודעה דחופה ===== */
+#alert{position:fixed;inset:0;z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6vh 8vw;
+  background:radial-gradient(circle at 50% 40%,#8c0f22,#2b040b 75%)}
+#alert.show{display:flex;animation:alertIn .45s ease both}
+.a-frame{position:absolute;inset:2vw;border:.6vw solid var(--urg);border-radius:2vw;animation:blink .5s steps(1) 8}
+.a-tag{font-size:2vw;font-weight:800;letter-spacing:.3em;color:#ffd1d6;margin-bottom:3vh}
+.a-icon{font-size:10vw;line-height:1;margin-bottom:3vh;animation:pop .8s ease 3}
+.a-title{font-size:5.5vw;font-weight:800;line-height:1.1;margin-bottom:3vh}
+.a-body{font-size:2.6vw;line-height:1.5;max-width:80vw;color:#ffe3e6;white-space:pre-line}
+@keyframes alertIn{from{opacity:0;transform:scale(1.05)}to{opacity:1;transform:none}}
+
+/* ===== רישיון ===== */
+#license{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:var(--bg1);cursor:auto;overflow-y:auto;padding:16px}
+#license.show{display:flex}
+.lic-wrap{display:flex;gap:24px;align-items:stretch;flex-wrap:wrap;justify-content:center;max-width:960px;width:100%}
+.lic-box{flex:1 1 380px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:32px;text-align:center}
+.lic-qr{flex:0 1 320px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.lic-qr h2{font-size:20px;color:var(--gold2);margin-bottom:6px}
+.lic-qr p{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:16px}
+#qrBox{background:#fff;padding:12px;border-radius:14px;display:inline-block;line-height:0}
+#qrBox img,#qrBox canvas{display:block;width:220px;height:220px}
+#qrFallback{display:none;color:var(--muted);font-size:13px;margin-top:8px}
+#licSend{margin-top:16px;width:100%;padding:13px;font-size:17px;font-weight:700;font-family:inherit;border:0;border-radius:12px;background:#25d366;color:#05210f;cursor:pointer}
+#licSend:focus{outline:3px solid #fff}
+
+/* ===== בדיקה בטלפון לאורך ===== */
+#rotateHint{display:none;position:fixed;inset:0;z-index:70;background:var(--bg1);color:var(--gold2);flex-direction:column;align-items:center;justify-content:center;gap:16px;font-size:20px;text-align:center;padding:24px}
+#rotateHint b{font-size:60px}
+@media (orientation:portrait){ body.started #rotateHint{display:flex} }
+.lic-logo{font-size:56px}
+.lic-box h1{font-size:28px;margin:10px 0 6px;color:var(--gold2)}
+.lic-box p{color:var(--muted);font-size:16px;margin-bottom:20px}
+.lic-box label{display:block;text-align:right;font-size:14px;color:var(--muted);margin:14px 0 6px}
+.lic-field{direction:ltr;font-family:monospace;font-size:22px;letter-spacing:.08em;padding:14px;border-radius:12px;background:rgba(0,0,0,.35);
+  border:1px solid var(--line);outline:none;min-height:54px;text-align:center;user-select:text;-webkit-user-select:text;color:var(--text)}
+.lic-field:focus{border-color:var(--gold)}
+#licBtn{margin-top:22px;width:100%;padding:16px;font-size:20px;font-weight:700;font-family:inherit;border:0;border-radius:12px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1307;cursor:pointer}
+#licBtn:focus{outline:3px solid #fff}
+#licErr{color:#ff8a96;margin-top:12px;min-height:20px;font-size:15px}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="name" id="bName">בן גוריון 62 א</div>
+      <div class="sub" id="bSub">קרית ביאליק · ברוכים הבאים</div>
+    </div>
+    <div class="clock"><div id="time">--:--</div></div>
+    <div class="dates">
+      <div id="gdate"></div>
+      <div id="hdate"></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="col-weather">
+      <div class="card weather">
+        <div class="w-now">
+          <div class="w-icon" id="wIcon">⛅</div>
+          <div class="w-main">
+            <div class="w-temp"><span id="wTemp">--</span>°</div>
+            <div class="w-desc" id="wDesc">טוען מזג אוויר…</div>
+            <div class="w-range" id="wRange"></div>
+          </div>
+        </div>
+        <div class="w-tip" id="wTip"></div>
+        <div class="w-details">
+          <div><span>מרגיש כמו</span><b id="wFeels">--°</b></div>
+          <div><span>לחות</span><b id="wHum">--%</b></div>
+          <div><span>רוח</span><b id="wWind">-- קמ״ש</b></div>
+        </div>
+        <div class="forecast" id="forecast"></div>
+      </div>
+      <div class="card shabbat" id="shabbatCard">
+        <div class="s-title" id="sTitle">🕯️ שבת</div>
+        <div class="s-rows">
+          <div><span id="sCandlesLbl">הדלקת נרות</span><b id="sCandles">--:--</b></div>
+          <div><span>צאת השבת</span><b id="sHavdala">--:--</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card board">
+      <div class="board-head">
+        <div class="board-title">📋 לוח מודעות לדיירים</div>
+        <div class="dots" id="dots"></div>
+      </div>
+      <div class="stage" id="stage"></div>
+      <div class="progress"><div id="progBar"></div></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="t-label"><span class="live"></span>מבזקי ynet</div>
+    <div class="t-track" id="tickerTrack"><div class="ticker-inner"><span class="t-item">טוען חדשות…</span></div></div>
+    <div class="t-status" id="netStatus"></div>
+  </footer>
+</div>
+
+<div id="nightVeil"></div>
+
+<div id="alert">
+  <div class="a-frame"></div>
+  <div class="a-tag">הודעה דחופה לדיירים</div>
+  <div class="a-icon" id="aIcon">🚨</div>
+  <div class="a-title" id="aTitle"></div>
+  <div class="a-body" id="aBody"></div>
+</div>
+
+<div id="license">
+  <div class="lic-wrap">
+    <div class="lic-box">
+      <div class="lic-logo">🔐</div>
+      <h1>הפעלת מסך לובי</h1>
+      <p>שלח את מזהה המכשיר למנהל המערכת וקבל קוד הפעלה</p>
+      <label>מזהה מכשיר</label>
+      <div id="licDevice" class="lic-field" contenteditable="true" spellcheck="false"></div>
+      <label>קוד הפעלה</label>
+      <div id="licKey" class="lic-field" contenteditable="true" spellcheck="false"></div>
+      <button id="licBtn">הפעל</button>
+      <div id="licErr"></div>
+    </div>
+    <div class="lic-qr">
+      <h2>📱 שליחה מהטלפון</h2>
+      <p>סרוק את הקוד בטלפון – תיפתח הודעת וואטסאפ מוכנה עם מזהה המכשיר. שלח אותה למנהל המערכת.</p>
+      <div id="qrBox"></div>
+      <div id="qrFallback">לא ניתן להציג QR – העתק את המזהה ידנית</div>
+      <button id="licSend">שלח בוואטסאפ</button>
+    </div>
+  </div>
+</div>
+
+<div id="rotateHint"><b>📱↻</b>סובב את הטלפון לרוחב<br>כדי לראות את מסך הלובי</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/* =========================================================
+   הגדרות – יש למלא את פרטי Firebase (זהים לקובץ admin.html)
+   ========================================================= */
+const CONFIG = {
+  BUILDING_ID:   'bengurion62a',
+  BUILDING_NAME: 'בן גוריון 62 א',
+  SUBTITLE:      'קרית ביאליק · ברוכים הבאים',
+  LAT: 32.8275, LON: 35.0858,          // קרית ביאליק
+  CANDLE_MINUTES: 30,                  // הדלקת נרות לפני השקיעה
+  NEWS_URL: '/.netlify/functions/news',
+  NEWS_RSS: 'https://www.ynet.co.il/Integration/StoryRss1854.xml',
+  FIREBASE: {
+    apiKey:            'REPLACE_ME',
+    authDomain:        'REPLACE_ME.firebaseapp.com',
+    databaseURL:       'https://REPLACE_ME-default-rtdb.firebaseio.com',
+    projectId:         'REPLACE_ME',
+    appId:             'REPLACE_ME'
+  }
+};
+
+/* ===== LicenseManager ===== */
+const APP_NAME      = 'LobbyScreen';
+const MASTER_SECRET = 'REPLACE_WITH_MASTER_SECRET';
+const LIC_CHARSET   = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const ADMIN_PHONE   = '';   // מספר הוואטסאפ שלך בפורמט 9725XXXXXXXX. ריק = בחירת איש קשר בוואטסאפ
+
+const URGENT_REPEAT_MS = 10 * 60 * 1000;  // השתלטות חוזרת להודעה דחופה כל 10 דקות
+const ALERT_MS         = 8000;            // משך ההשתלטות על המסך
+const PR = { urgent: 3, important: 2, normal: 1 };
+const DAYS = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+
+const $ = s => document.querySelector(s);
+const pad = n => String(n).padStart(2, '0');
+const store = {
+  get(k, d = null) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+let deviceId = '';
+let settings = Object.assign({
+  buildingName: CONFIG.BUILDING_NAME, subtitle: CONFIG.SUBTITLE,
+  nightStart: '23:30', nightEnd: '06:00', showShabbat: true, msgSeconds: 12
+}, store.get('lobby_settings', {}));
+let messages = store.get('lobby_messages', []);
+let db = null, startedAt = Date.now(), loadedReloadAt = null, knownIds = null;
+let netOk = true, fbConnected = null;
+
+/* =========================================================
+   רישיון
+   ========================================================= */
+function randomId() {
+  const a = new Uint8Array(8); crypto.getRandomValues(a);
+  return 'LOBBY-' + Array.from(a, b => LIC_CHARSET[b % 32]).join('');
+}
+function getDeviceId() {
+  let id = store.get('lobby_device_id');
+  if (!id) { id = randomId(); store.set('lobby_device_id', id); }
+  return id;
+}
+async function expectedKey(id) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id + MASTER_SECRET + APP_NAME));
+  const b = new Uint8Array(buf);
+  let s = '';
+  for (let i = 0; i < 12; i++) s += LIC_CHARSET[b[i] % 32];
+  return s.slice(0, 4) + '-' + s.slice(4, 8) + '-' + s.slice(8, 12);
+}
+function normKey(k) {
+  return (k || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/(.{4})(?=.)/g, '$1-');
+}
+function requestText() {
+  return `בקשת הפעלה – מסך לובי\nבניין: ${settings.buildingName || CONFIG.BUILDING_NAME}\nמזהה מכשיר: ${deviceId}`;
+}
+function waLink() {
+  return `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(requestText())}`;
+}
+function showLicense() {
+  $('#licDevice').textContent = deviceId;
+  $('#license').classList.add('show');
+  const box = $('#qrBox');
+  box.innerHTML = '';
+  try {
+    new QRCode(box, { text: waLink(), width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
+  } catch (e) {
+    box.style.display = 'none';
+    $('#qrFallback').style.display = 'block';
+  }
+  $('#licKey').focus();
+}
+$('#licSend').addEventListener('click', async () => {
+  if (navigator.share && /Android|iPhone|iPad/i.test(navigator.userAgent) && !ADMIN_PHONE) {
+    try { await navigator.share({ text: requestText() }); return; } catch (e) {}
+  }
+  window.open(waLink(), '_blank');
+});
+async function activate() {
+  const key = normKey($('#licKey').textContent);
+  try {
+    if (key && key === await expectedKey(deviceId)) {
+      store.set('lobby_license', key);
+      start();
+    } else {
+      $('#licErr').textContent = 'קוד הפעלה שגוי';
+    }
+  } catch (e) {
+    $('#licErr').textContent = 'נדרש חיבור מאובטח (https)';
+  }
+}
+$('#licBtn').addEventListener('click', activate);
+$('#licKey').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); activate(); } });
+$('#licDevice').addEventListener('blur', () => { $('#licDevice').textContent = deviceId; });
+
+/* =========================================================
+   עזרי רשת
+   ========================================================= */
+async function fetchJSON(url, ms = 15000) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: ctl.signal, cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    setNet(true);
+    return j;
+  } catch (e) {
+    setNet(false);
+    throw e;
+  } finally { clearTimeout(t); }
+}
+function setNet(ok) { netOk = ok; renderNetStatus(); }
+function renderNetStatus() {
+  const offline = !navigator.onLine || !netOk || fbConnected === false;
+  $('#netStatus').textContent = offline ? '⚠ אין חיבור · מוצג מידע שמור' : '';
+}
+
+/* =========================================================
+   שעון ותאריכים
+   ========================================================= */
+let lastDateKey = '';
+function tick() {
+  const d = new Date();
+  $('#time').innerHTML = `${pad(d.getHours())}:${pad(d.getMinutes())}<span id="sec">${pad(d.getSeconds())}</span>`;
+  const key = d.toDateString();
+  if (key !== lastDateKey) {
+    lastDateKey = key;
+    $('#gdate').textContent = new Intl.DateTimeFormat('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+    loadHebDate();
+  }
+}
+async function loadHebDate() {
+  const d = new Date();
+  const ds = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  try {
+    const r = await fetchJSON(`https://www.hebcal.com/converter?cfg=json&date=${ds}&g2h=1&strict=1`);
+    const h = (r.hebrew || '').replace(/[\u0591-\u05C7]/g, '');
+    if (h) { store.set('lobby_hdate', { ds, h }); $('#hdate').textContent = h; return; }
+  } catch (e) {}
+  const c = store.get('lobby_hdate');
+  if (c && c.ds === ds) { $('#hdate').textContent = c.h; return; }
+  try {
+    $('#hdate').textContent = new Intl.DateTimeFormat('he-u-ca-hebrew', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+  } catch (e) {}
+}
+
+/* =========================================================
+   מזג אוויר
+   ========================================================= */
+function wInfo(c, isDay = 1) {
+  const m = {
+    0:['☀️','בהיר'],1:['🌤️','בהיר ברובו'],2:['⛅','מעונן חלקית'],3:['☁️','מעונן'],
+    45:['🌫️','ערפל'],48:['🌫️','ערפל'],51:['🌦️','טפטוף קל'],53:['🌦️','טפטוף'],55:['🌦️','טפטוף חזק'],
+    56:['🌧️','טפטוף קופא'],57:['🌧️','טפטוף קופא'],61:['🌧️','גשם קל'],63:['🌧️','גשם'],65:['🌧️','גשם חזק'],
+    66:['🌧️','גשם קופא'],67:['🌧️','גשם קופא'],71:['🌨️','שלג קל'],73:['🌨️','שלג'],75:['❄️','שלג כבד'],77:['🌨️','גרגרי שלג'],
+    80:['🌦️','ממטרים קלים'],81:['🌧️','ממטרים'],82:['⛈️','ממטרים עזים'],85:['🌨️','ממטרי שלג'],86:['🌨️','ממטרי שלג'],
+    95:['⛈️','סופת רעמים'],96:['⛈️','סופת רעמים וברד'],99:['⛈️','סופת רעמים וברד']
+  };
+  let r = m[c] || ['🌡️', ''];
+  if (!isDay && c <= 2) r = ['🌙', c === 0 ? 'לילה בהיר' : r[1]];
+  return r;
+}
+async function loadWeather() {
+  const u = `https://api.open-meteo.com/v1/forecast?latitude=${CONFIG.LAT}&longitude=${CONFIG.LON}` +
+    `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day` +
+    `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max` +
+    `&timezone=Asia%2FJerusalem&forecast_days=6`;
+  try {
+    const w = await fetchJSON(u);
+    store.set('lobby_weather', w);
+    renderWeather(w);
+  } catch (e) {}
+}
+function renderWeather(w) {
+  if (!w || !w.current || !w.daily) return;
+  const cur = w.current, dl = w.daily;
+  const [ic, tx] = wInfo(cur.weather_code, cur.is_day);
+  $('#wIcon').textContent = ic;
+  $('#wTemp').textContent = Math.round(cur.temperature_2m);
+  $('#wDesc').textContent = tx;
+  $('#wRange').textContent = `היום ${Math.round(dl.temperature_2m_min[0])}° – ${Math.round(dl.temperature_2m_max[0])}°`;
+  $('#wFeels').textContent = Math.round(cur.apparent_temperature) + '°';
+  $('#wHum').textContent = Math.round(cur.relative_humidity_2m) + '%';
+  $('#wWind').textContent = Math.round(cur.wind_speed_10m) + ' קמ״ש';
+
+  const rain = dl.precipitation_probability_max[0] || 0;
+  const maxT = dl.temperature_2m_max[0];
+  let tip = '';
+  if (rain >= 50) tip = `☂️ סיכוי לגשם ${rain}% – כדאי לקחת מטריה`;
+  else if (rain >= 25) tip = `🌦️ סיכוי לגשם ${rain}%`;
+  else if (maxT >= 32) tip = '🥵 יום חם – לשתות הרבה מים';
+  else if (dl.temperature_2m_min[0] <= 9) tip = '🧥 קר הבוקר – כדאי להתלבש חם';
+  $('#wTip').textContent = tip;
+
+  const f = $('#forecast'); f.innerHTML = '';
+  for (let i = 1; i <= 5 && i < dl.time.length; i++) {
+    const d = new Date(dl.time[i] + 'T12:00:00');
+    const [fi] = wInfo(dl.weather_code[i]);
+    const pr = dl.precipitation_probability_max[i] || 0;
+    const el = document.createElement('div');
+    el.className = 'f-day';
+    el.innerHTML = `<div class="f-name">${DAYS[d.getDay()]}</div><div class="f-icon">${fi}</div>` +
+      `<div class="f-temps"><b>${Math.round(dl.temperature_2m_max[i])}°</b> <span>${Math.round(dl.temperature_2m_min[i])}°</span></div>` +
+      `<div class="f-rain">${pr >= 20 ? '💧 ' + pr + '%' : ''}</div>`;
+    f.appendChild(el);
+  }
+}
+
+/* =========================================================
+   חדשות ynet
+   ========================================================= */
+let lastNewsSig = '', tickerAnim = null;
+async function loadNews() {
+  let items = null;
+  try { const r = await fetchJSON(CONFIG.NEWS_URL); items = r.items; } catch (e) {}
+  if (!items || !items.length) {
+    try {
+      const r = await fetchJSON('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(CONFIG.NEWS_RSS));
+      items = (r.items || []).map(i => ({ title: i.title }));
+    } catch (e) {}
+  }
+  if (items && items.length) {
+    const d = { items, t: Date.now() };
+    store.set('lobby_news', d);
+    renderNews(d);
+  } else {
+    const c = store.get('lobby_news');
+    if (c) renderNews(c);
+  }
+}
+function renderNews(d) {
+  const items = (d.items || []).filter(i => i && i.title).slice(0, 12);
+  if (!items.length) return;
+  const sig = items.map(i => i.title).join('|');
+  if (sig === lastNewsSig) return;
+  lastNewsSig = sig;
+  buildTicker(items);
+}
+function buildTicker(items) {
+  const track = $('#tickerTrack');
+  track.innerHTML = '';
+  const inner = document.createElement('div');
+  inner.className = 'ticker-inner';
+  items.forEach(it => {
+    const s = document.createElement('span'); s.className = 't-item'; s.textContent = it.title; inner.appendChild(s);
+    const sep = document.createElement('span'); sep.className = 't-sep'; sep.textContent = '◆'; inner.appendChild(sep);
+  });
+  track.appendChild(inner);
+  requestAnimationFrame(() => {
+    const tw = track.clientWidth, iw = inner.scrollWidth;
+    const speed = Math.max(60, window.innerWidth * 0.055);   // פיקסלים לשנייה
+    if (tickerAnim) tickerAnim.cancel();
+    tickerAnim = inner.animate(
+      [{ transform: `translateX(${-tw}px)` }, { transform: `translateX(${iw}px)` }],
+      { duration: (tw + iw) / speed * 1000, iterations: Infinity, easing: 'linear' }
+    );
+  });
+}
+
+/* =========================================================
+   שבת (Hebcal)
+   ========================================================= */
+function shabbatUrl(d) {
+  return `https://www.hebcal.com/shabbat?cfg=json&latitude=${CONFIG.LAT}&longitude=${CONFIG.LON}` +
+    `&tzid=Asia/Jerusalem&b=${CONFIG.CANDLE_MINUTES}&M=on&lg=he` +
+    `&gy=${d.getFullYear()}&gm=${d.getMonth() + 1}&gd=${d.getDate()}`;
+}
+async function loadShabbat() {
+  if (!settings.showShabbat) { $('#shabbatCard').classList.add('hidden'); return; }
+  const d = new Date();
+  try {
+    let r = await fetchJSON(shabbatUrl(d));
+    const hv = (r.items || []).find(i => i.category === 'havdalah');
+    if (hv && new Date(hv.date) < new Date()) {
+      d.setDate(d.getDate() + 2);
+      r = await fetchJSON(shabbatUrl(d));
+    }
+    store.set('lobby_shabbat', r);
+    renderShabbat(r);
+  } catch (e) {
+    const c = store.get('lobby_shabbat');
+    if (c) renderShabbat(c);
+  }
+}
+function fmtTime(iso) {
+  return new Date(iso).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' });
+}
+function renderShabbat(r) {
+  const card = $('#shabbatCard');
+  if (!settings.showShabbat || !r || !r.items) { card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  const c = r.items.find(i => i.category === 'candles');
+  const h = r.items.find(i => i.category === 'havdalah');
+  const p = r.items.find(i => i.category === 'parashat');
+  const now = new Date();
+  const inShabbat = c && h && now >= new Date(c.date) && now <= new Date(h.date);
+  const parasha = p ? (p.hebrew || p.title) : '';
+  $('#sTitle').textContent = inShabbat ? `🕯️ שבת שלום${parasha ? ' · ' + parasha : ''}` : `🕯️ שבת${parasha ? ' · ' + parasha : ''}`;
+  if (c) {
+    const day = new Date(c.date).toLocaleDateString('he-IL', { weekday: 'short', timeZone: 'Asia/Jerusalem' });
+    $('#sCandlesLbl').textContent = `הדלקת נרות · ${day}`;
+    $('#sCandles').textContent = fmtTime(c.date);
+  }
+  $('#sHavdala').textContent = h ? fmtTime(h.date) : '--:--';
+}
+
+/* =========================================================
+   לוח מודעות – סבב הודעות
+   ========================================================= */
+let rotIdx = -1, rotTimer = null, rotStarted = false, shownId = null, lastRenderAt = 0;
+const lastTakeover = {};
+
+function defaultMsg() {
+  return { id: '_welcome', icon: '🏠', title: 'ברוכים הבאים', body: `${settings.buildingName}\nשיהיה לכולם יום נעים!`, priority: 'normal' };
+}
+function activeMessages() {
+  const now = Date.now();
+  return messages
+    .filter(m => m.active !== false && (!m.startAt || m.startAt <= now) && (!m.expiresAt || m.expiresAt > now))
+    .sort((a, b) => (PR[b.priority] || 1) - (PR[a.priority] || 1) || (b.createdAt || 0) - (a.createdAt || 0));
+}
+function currentList() {
+  const a = activeMessages();
+  return a.length ? a : [defaultMsg()];
+}
+function nextMessage() {
+  rotStarted = true;
+  clearTimeout(rotTimer);
+  const list = currentList();
+  rotIdx = (rotIdx + 1) % list.length;
+  const m = list[rotIdx];
+  let dur = Math.max(5, +(m.duration || settings.msgSeconds || 12)) * 1000;
+
+  if (m.priority === 'urgent') {
+    const last = lastTakeover[m.id] || 0;
+    if (Date.now() - last > URGENT_REPEAT_MS) {
+      lastTakeover[m.id] = Date.now();
+      showAlert(m);
+      dur += ALERT_MS;
+    }
+  }
+
+  // הודעה יחידה – לא להריץ אנימציה מחדש כל סבב (רק פעם בדקה)
+  const skip = list.length === 1 && shownId === m.id && Date.now() - lastRenderAt < 60000;
+  if (!skip) renderMsg(m);
+  renderDots(list.length, rotIdx);
+  runProgress(dur);
+  rotTimer = setTimeout(nextMessage, dur);
+}
+function showMessageNow(id) {
+  const list = currentList();
+  const idx = list.findIndex(m => m.id === id);
+  if (idx < 0) return;
+  rotIdx = idx - 1;
+  shownId = null;
+  nextMessage();
+}
+function renderMsg(m) {
+  const stage = $('#stage');
+  stage.querySelectorAll('.msg').forEach(o => { o.classList.add('out'); setTimeout(() => o.remove(), 700); });
+  const el = document.createElement('div');
+  const prio = PR[m.priority] ? m.priority : 'normal';
+  const long = ((m.body || '').length > 120) || ((m.title || '').length > 35);
+  el.className = 'msg ' + prio + (long ? ' long' : '');
+  const badge = prio === 'urgent' ? '<div class="badge urgent">דחוף</div>' : prio === 'important' ? '<div class="badge important">חשוב</div>' : '';
+  el.innerHTML = `${badge}<div class="msg-icon"></div><div class="msg-title"></div><div class="msg-body"></div><div class="msg-meta"></div>`;
+  el.querySelector('.msg-icon').textContent = m.icon || '📢';
+  el.querySelector('.msg-title').textContent = m.title || '';
+  el.querySelector('.msg-body').textContent = m.body || '';
+  if (m.expiresAt) {
+    el.querySelector('.msg-meta').textContent = 'בתוקף עד ' + new Date(m.expiresAt).toLocaleString('he-IL', { weekday: 'short', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+  stage.appendChild(el);
+  shownId = m.id;
+  lastRenderAt = Date.now();
+}
+function renderDots(n, i) {
+  const d = $('#dots'); d.innerHTML = '';
+  if (n <= 1 || n > 15) return;
+  for (let k = 0; k < n; k++) { const e = document.createElement('i'); if (k === i) e.className = 'on'; d.appendChild(e); }
+}
+function runProgress(dur) {
+  const b = $('#progBar');
+  b.style.transition = 'none'; b.style.width = '0';
+  void b.offsetWidth;
+  b.style.transition = `width ${dur}ms linear`; b.style.width = '100%';
+}
+function showAlert(m) {
+  $('#aIcon').textContent = m.icon || '🚨';
+  $('#aTitle').textContent = m.title || '';
+  $('#aBody').textContent = m.body || '';
+  const a = $('#alert');
+  a.classList.remove('show'); void a.offsetWidth; a.classList.add('show');
+  setTimeout(() => a.classList.remove('show'), ALERT_MS);
+}
+function onMessages(list) {
+  messages = list;
+  store.set('lobby_messages', list);
+  if (knownIds === null) {
+    knownIds = new Set(list.map(m => m.id));
+    if (!rotStarted) nextMessage();
+    return;
+  }
+  const fresh = activeMessages().find(m => !knownIds.has(m.id));
+  list.forEach(m => knownIds.add(m.id));
+  if (fresh) showMessageNow(fresh.id);
+  else renderDots(currentList().length, Math.min(rotIdx, currentList().length - 1));
+}
+
+/* =========================================================
+   הגדרות מרחוק
+   ========================================================= */
+function applySettings(v) {
+  const { reloadAt, ...rest } = v || {};
+  settings = Object.assign(settings, rest);
+  store.set('lobby_settings', settings);
+  $('#bName').textContent = settings.buildingName || CONFIG.BUILDING_NAME;
+  $('#bSub').textContent = settings.subtitle || '';
+  document.title = 'מסך לובי – ' + (settings.buildingName || '');
+  if (settings.showShabbat) {
+    const c = store.get('lobby_shabbat');
+    if (c) renderShabbat(c); else loadShabbat();
+  } else {
+    $('#shabbatCard').classList.add('hidden');
+  }
+  minuteJobs();
+}
+
+/* =========================================================
+   Firebase
+   ========================================================= */
+function initFirebase() {
+  if (typeof firebase === 'undefined' || !CONFIG.FIREBASE.apiKey || CONFIG.FIREBASE.apiKey.startsWith('REPLACE')) return;
+  try {
+    firebase.initializeApp(CONFIG.FIREBASE);
+    db = firebase.database();
+    const base = db.ref('lobby/' + CONFIG.BUILDING_ID);
+
+    base.child('messages').on('value', s => {
+      const v = s.val() || {};
+      onMessages(Object.entries(v).map(([id, m]) => Object.assign({ id }, m)));
+    });
+
+    base.child('settings').on('value', s => {
+      const v = s.val() || {};
+      if (loadedReloadAt === null) loadedReloadAt = v.reloadAt || 0;
+      else if (v.reloadAt && v.reloadAt !== loadedReloadAt) { location.reload(); return; }
+      applySettings(v);
+    });
+
+    db.ref('.info/connected').on('value', s => { fbConnected = !!s.val(); renderNetStatus(); if (fbConnected) heartbeat(); });
+    setInterval(heartbeat, 120000);
+  } catch (e) { console.warn('Firebase', e); }
+}
+function heartbeat() {
+  if (!db) return;
+  db.ref('lobby/' + CONFIG.BUILDING_ID + '/status').set({
+    lastSeen: firebase.database.ServerValue.TIMESTAMP,
+    device: deviceId,
+    screen: window.innerWidth + 'x' + window.innerHeight
+  }).catch(() => {});
+}
+
+/* =========================================================
+   משימות רקע
+   ========================================================= */
+function inRange(now, a, b) {
+  if (!a || !b || a === b) return false;
+  return a < b ? (now >= a && now < b) : (now >= a || now < b);
+}
+function minuteJobs() {
+  const d = new Date();
+  const hm = pad(d.getHours()) + ':' + pad(d.getMinutes());
+  document.body.classList.toggle('night', inRange(hm, settings.nightStart, settings.nightEnd));
+  if (hm === '04:00' && Date.now() - startedAt > 3600e3) location.reload();   // ריענון יומי
+  const c = store.get('lobby_shabbat'); if (c) renderShabbat(c);
+}
+function burnShift() {   // הגנה מצריבת מסך
+  const r = (a, b) => Math.round(a + Math.random() * (b - a));
+  $('#app').style.transform = `translate(${r(-6, 6)}px, ${r(-4, 4)}px)`;
+}
+
+/* =========================================================
+   הפעלה
+   ========================================================= */
+let started = false;
+function start() {
+  if (started) return;
+  started = true;
+  $('#license').classList.remove('show');
+  document.body.classList.add('started');
+  applySettings({});
+  tick(); setInterval(tick, 1000);
+
+  const cw = store.get('lobby_weather'); if (cw) renderWeather(cw);
+  loadWeather(); setInterval(loadWeather, 30 * 60e3);
+
+  const cn = store.get('lobby_news'); if (cn) renderNews(cn);
+  loadNews(); setInterval(loadNews, 10 * 60e3);
+
+  loadShabbat(); setInterval(loadShabbat, 3 * 3600e3);
+
+  nextMessage();
+  initFirebase();
+
+  setInterval(minuteJobs, 60e3);
+  setInterval(burnShift, 4 * 60e3);
+
+  window.addEventListener('online', () => { renderNetStatus(); loadWeather(); loadNews(); });
+  window.addEventListener('offline', renderNetStatus);
+  let rt; window.addEventListener('resize', () => {
+    clearTimeout(rt);
+    rt = setTimeout(() => { lastNewsSig = ''; const c = store.get('lobby_news'); if (c) renderNews(c); }, 500);
+  });
+}
+
+(async function boot() {
+  deviceId = getDeviceId();
+  const urlKey = new URLSearchParams(location.search).get('key');
+  if (urlKey) store.set('lobby_license', normKey(urlKey));
+  const lic = store.get('lobby_license');
+  try {
+    if (lic && normKey(lic) === await expectedKey(deviceId)) return start();
+  } catch (e) {
+    $('#licErr').textContent = 'נדרש חיבור מאובטח (https)';
+  }
+  showLicense();
+})();
+</script>
+</body>
+</html>
