@@ -72,6 +72,43 @@ label.f{display:block;font-size:14px;color:var(--muted);margin:16px 0 6px;font-w
 .m-actions button{flex:1;padding:9px;font-size:14px}
 .empty{text-align:center;color:var(--muted);padding:50px 20px}
 .section-title{font-size:13px;color:var(--muted);margin:18px 2px 8px;font-weight:600}
+.tag.rep{background:rgba(124,196,255,.13);color:#9fd2ff}
+.tag.wait{background:rgba(214,174,98,.12);color:var(--gold2)}
+
+/* חזרתיות בעורך */
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1;min-width:90px;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:10px 6px;font-size:14px;font-weight:600;cursor:pointer}
+.seg button.sel{border-color:var(--gold);color:var(--gold2);background:var(--card2)}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:12px 0 8px}
+.days button{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:10px 0;font-size:15px;font-weight:700;cursor:pointer}
+.days button.sel{border-color:var(--gold);background:rgba(214,174,98,.18);color:var(--gold2)}
+.rep-box{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:4px 12px 12px;margin-top:10px}
+.rep-sum{margin-top:8px;font-size:13px;color:var(--gold2)}
+
+/* ברכות אוטומטיות */
+.gcard{background:linear-gradient(135deg,rgba(214,174,98,.13),rgba(214,174,98,.03));border:1px solid rgba(214,174,98,.35);border-radius:16px;padding:14px;margin-bottom:6px}
+.g-head{display:flex;justify-content:space-between;align-items:center}
+.g-head b{color:var(--gold2);font-size:16px}
+.g-head button{background:none;border:0;color:var(--gold2);font-size:14px;font-weight:600;cursor:pointer;padding:6px}
+.g-now{display:flex;gap:12px;align-items:center;margin-top:10px;background:rgba(0,0,0,.22);border-radius:12px;padding:12px}
+.g-now.solemn{filter:grayscale(1)}
+.g-ic{font-size:32px;line-height:1}
+.g-t{font-weight:800;font-size:17px}
+.g-b{font-size:13px;color:#cfd5e3;white-space:pre-line;margin-top:2px}
+.g-sub{font-size:12px;color:var(--muted);margin-top:8px}
+.g-next{font-size:13px;margin-top:6px;color:#e3d6b8}
+.g-list{margin-top:10px;border-top:1px solid var(--line)}
+.g-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.g-row:last-child{border-bottom:0}
+.g-row .gi{font-size:22px;width:30px;text-align:center}
+.g-row .gm{flex:1;min-width:0}
+.g-row .gl{font-weight:700;font-size:15px}
+.g-row .gw{font-size:12px;color:var(--muted)}
+.g-row .gp{font-size:13px;color:#cfd5e3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-row .gp i{color:var(--gold2);font-style:normal}
+.g-row.off .gi,.g-row.off .gm{opacity:.45}
+.g-row button{background:var(--card2);border:0;border-radius:10px;width:38px;height:38px;font-size:16px;cursor:pointer}
+.g-row input{width:22px;height:22px;accent-color:var(--gold)}
 
 .fab{position:fixed;left:20px;bottom:calc(22px + env(safe-area-inset-bottom));width:62px;height:62px;border-radius:50%;border:0;
   background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1307;font-size:34px;font-weight:300;box-shadow:0 10px 30px rgba(0,0,0,.45);cursor:pointer;z-index:20}
@@ -179,6 +216,7 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
   </nav>
 
   <section class="pane" id="pane-msgs">
+    <div id="greetCard"></div>
     <div id="msgList"></div>
     <div class="empty hidden" id="emptyMsgs">אין הודעות עדיין.<br>לחץ על ＋ כדי לפרסם הודעה לדיירים.</div>
   </section>
@@ -240,6 +278,30 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
       <button class="replay" id="replay">▶ הצג שוב</button>
     </div>
 
+    <label class="f">🔁 חזרתיות</label>
+    <div class="seg" id="repMode">
+      <button type="button" data-m="none">ללא</button>
+      <button type="button" data-m="days">ימים ושעות</button>
+      <button type="button" data-m="holy">🕯️ בזמן שבת/חג</button>
+    </div>
+    <div class="rep-box hidden" id="repDays">
+      <div class="days" id="dayChips"></div>
+      <div class="quick" id="dayPresets">
+        <button type="button" data-p="all">כל יום</button>
+        <button type="button" data-p="week">ימי חול (א׳–ה׳)</button>
+        <button type="button" data-p="weekend">סוף שבוע (ו׳–ש׳)</button>
+      </div>
+      <div class="row2">
+        <div><div class="hint">משעה</div><input type="time" id="fFrom" dir="ltr"></div>
+        <div><div class="hint">עד שעה</div><input type="time" id="fTo" dir="ltr"></div>
+      </div>
+      <div class="hint">שעות ריקות = כל היום. אפשר גם טווח שעובר חצות, למשל 22:00–02:00.</div>
+    </div>
+    <div class="rep-box hidden" id="repHoly">
+      <div class="hint">ההודעה תוצג מהדלקת הנרות עד צאת השבת או החג (לפי זמני קרית ביאליק), ותחליף את ברכת השבת/החג האוטומטית.</div>
+    </div>
+    <div class="rep-sum" id="repSum"></div>
+
     <label class="f">להציג עד</label>
     <div class="quick" id="quickExp">
       <button data-d="1">יום</button><button data-d="3">3 ימים</button><button data-d="7">שבוע</button>
@@ -262,6 +324,25 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
   </div>
 </div>
 
+<!-- ===== עורך ברכה ===== -->
+<div id="gEditor" class="sheet hidden">
+  <div class="sheet-card">
+    <div class="sheet-head"><h2 id="gEdTitle">עריכת ברכה</h2><button class="icon-btn" id="gEdClose">✕</button></div>
+    <div class="hint" id="gEdWhen"></div>
+    <label class="f">אייקון</label>
+    <div class="icons" id="gIconGrid"></div>
+    <label class="f">כותרת</label>
+    <input id="gTitle" maxlength="60">
+    <label class="f">תוכן</label>
+    <textarea id="gBody" maxlength="240"></textarea>
+    <div class="hint">{building} = שם הבניין · {name} = שם היום מהלוח העברי (למשל "ראש חודש כסלו")</div>
+    <div class="sheet-actions">
+      <button class="btn" id="gRestore">↺ שחזר מקורי</button>
+      <button class="btn primary" id="gSave">שמור</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -274,6 +355,8 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
 const CONFIG = {
   BUILDING_ID:   'bengurion62a',
   BUILDING_NAME: 'בן גוריון 62 א',
+  LAT: 32.8275, LON: 35.0858,          // קרית ביאליק – לזמני שבת וחגים
+  CANDLE_MINUTES: 30,
   FIREBASE: {
     apiKey:            'AIzaSyCjps3ba4kHmAuG9H7DxRxm7FCMbzSOvW8',
     authDomain:        'lobby-screen-e6ada.firebaseapp.com',
@@ -284,6 +367,300 @@ const CONFIG = {
     appId:             '1:470411970786:web:555edf53bf0765bf16b6bb'
   }
 };
+/* =========================================================
+   לוח שנה – שבתות, חגים, צומות וברכות אוטומטיות (Hebcal)
+   ========================================================= */
+// key, שם, מתי, אייקון, כותרת, תוכן, עדיפות (1 = הכי גבוהה), עיצוב שקט
+const GREETINGS = [
+  ['default',     'ברירת מחדל',               'כשאין ברכה אחרת',              '🏠', 'ברוכים הבאים',       '{building}\nשיהיה לכולם יום נעים!',            9, false],
+  ['shabbat',     'שבת',                       'מהדלקת נרות עד צאת השבת',      '🕯️', 'שבת שלום',           'לדיירי בניין {building}',                       3, false],
+  ['rh',          'ראש השנה',                  'מערב החג עד צאת החג',          '🍎', 'שנה טובה ומתוקה',    'לכל דיירי {building}',                          1, false],
+  ['gedaliah',    'צום גדליה',                 'כל היום עד צאת הצום',          '🕯️', 'צום קל',             'צום גדליה',                                     4, true],
+  ['yk',          'יום כיפור',                 'מערב יום כיפור עד צאת הצום',   '📜', 'גמר חתימה טובה',     'לכל דיירי {building}',                          1, true],
+  ['sukkot',      'סוכות',                     'מהדלקת נרות עד צאת החג',       '🌿', 'חג סוכות שמח',       'לכל דיירי {building}',                          1, false],
+  ['cholSukkot',  'חול המועד סוכות',           'כל היום, כולל הושענא רבה',     '🌿', 'מועדים לשמחה',       '{name}',                                        4, false],
+  ['simchatTorah','שמיני עצרת / שמחת תורה',    'מהדלקת נרות עד צאת החג',       '📜', 'חג שמח',             'שמחת תורה · לכל דיירי {building}',              1, false],
+  ['chanukah',    'חנוכה',                     '8 ימים, מהדלקת הנר הראשון',    '🕎', 'חנוכה שמח',          '{name}',                                        4, false],
+  ['tevet',       'עשרה בטבת',                 'כל היום עד צאת הצום',          '🕯️', 'צום קל',             'עשרה בטבת',                                     4, true],
+  ['tubishvat',   'ט״ו בשבט',                  'כל היום',                      '🌳', 'ט״ו בשבט שמח',       'לכל דיירי {building}',                          4, false],
+  ['esther',      'תענית אסתר',                'כל היום עד צאת הצום',          '🕯️', 'צום קל',             'תענית אסתר',                                    4, true],
+  ['purim',       'פורים',                     'כל היום',                      '🎭', 'פורים שמח',          'לכל דיירי {building}',                          4, false],
+  ['pesach',      'פסח',                       'מהדלקת נרות עד צאת החג',       '🍷', 'חג פסח כשר ושמח',    'לכל דיירי {building}',                          1, false],
+  ['cholPesach',  'חול המועד פסח',             'כל היום',                      '🍷', 'מועדים לשמחה',       '{name}',                                        4, false],
+  ['shviiPesach', 'שביעי של פסח',              'מהדלקת נרות עד צאת החג',       '🍷', 'חג שמח',             'שביעי של פסח · לכל דיירי {building}',           1, false],
+  ['shoah',       'יום השואה',                 'מהערב עד הערב',                '🕯️', 'יזכור',              'יום הזיכרון לשואה ולגבורה',                     2, true],
+  ['zikaron',     'יום הזיכרון',               'מהערב עד הערב',                '🕯️', 'יזכור',              'לזכר חללי מערכות ישראל ונפגעי פעולות האיבה',    2, true],
+  ['atzmaut',     'יום העצמאות',               'מהערב עד סוף היום',            '🇮🇱', 'חג עצמאות שמח',      'לכל דיירי {building}',                          4, false],
+  ['lagbaomer',   'ל״ג בעומר',                 'כל היום',                      '🔥', 'ל״ג בעומר שמח',      'לכל דיירי {building}',                          4, false],
+  ['yerushalayim','יום ירושלים',               'כל היום',                      '🏛️', 'יום ירושלים שמח',    'לכל דיירי {building}',                          4, false],
+  ['shavuot',     'שבועות',                    'מהדלקת נרות עד צאת החג',       '🌾', 'חג שבועות שמח',      'לכל דיירי {building}',                          1, false],
+  ['tammuz',      'י״ז בתמוז',                 'כל היום עד צאת הצום',          '🕯️', 'צום קל',             'שבעה עשר בתמוז',                                4, true],
+  ['tishabav',    'תשעה באב',                  'מערב הצום עד צאתו',            '🕯️', 'צום קל',             'תשעה באב',                                      1, true],
+  ['tubeav',      'ט״ו באב',                   'כל היום',                      '❤️', 'ט״ו באב שמח',        'לכל דיירי {building}',                          4, false],
+  ['roshchodesh', 'ראש חודש',                  'כל היום',                      '🌙', 'חודש טוב',           '{name}',                                        5, false]
+].map(([key, label, when, icon, title, body, prio, solemn]) => ({ key, label, when, icon, title, body, prio, solemn }));
+const GREET = Object.fromEntries(GREETINGS.map(g => [g.key, g]));
+
+// התאמת שמות החגים של Hebcal לסוגי הברכות
+const CAL_RULES = [
+  [/^Erev Rosh Hashana/i, 'rh', 'erev'],
+  [/^Rosh Hashana(?! LaBehemot)/i, 'rh', 'yt'],
+  [/^Erev Yom Kippur/i, 'yk', 'erev'],
+  [/^Yom Kippur$/i, 'yk', 'yt'],
+  [/^Sukkot.*(CH|Hoshana)/i, 'cholSukkot', 'day'],
+  [/^Sukkot/i, 'sukkot', 'yt'],
+  [/^(Shmini Atzeret|Simchat Torah)/i, 'simchatTorah', 'yt'],
+  [/^Chanukah/i, 'chanukah', 'chanukah'],
+  [/^Tu BiShvat/i, 'tubishvat', 'day'],
+  [/^Ta.anit Esther/i, 'esther', 'fast'],
+  [/^Purim$/i, 'purim', 'day'],
+  [/^Pesach.*CH/i, 'cholPesach', 'day'],
+  [/^Pesach VII$/i, 'shviiPesach', 'yt'],
+  [/^Pesach I$/i, 'pesach', 'yt'],
+  [/^Yom HaShoah/i, 'shoah', 'memorial'],
+  [/^Yom HaZikaron/i, 'zikaron', 'memorial'],
+  [/^Yom HaAtzma/i, 'atzmaut', 'atzmaut'],
+  [/^Yom Yerushalayim/i, 'yerushalayim', 'day'],
+  [/^Lag (Ba|B.)Omer/i, 'lagbaomer', 'day'],
+  [/^Shavuot/i, 'shavuot', 'yt'],
+  [/^Tu B.?Av/i, 'tubeav', 'day'],
+  [/^Rosh Chodesh/i, 'roshchodesh', 'day'],
+  [/^Tzom Gedal/i, 'gedaliah', 'fast'],
+  [/^Asara B/i, 'tevet', 'fast'],
+  [/^(Tzom Tammuz|Shiva.?Asar)/i, 'tammuz', 'fast'],
+  [/^Erev Tish.?a B.?Av/i, 'tishabav', 'erevTB'],
+  [/^Tish.?a B.?Av/i, 'tishabav', 'TB']
+];
+
+const Cal = {
+  events: [],      // { key, start, end, name, shabbat }
+  holy: [],        // קטעי שבת/חג: { start, end, kind }
+  loadedAt: 0,
+
+  dstr(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); },
+  day(ds) { return new Date(ds + 'T00:00:00'); },
+  at(ds, h, m = 0) { const d = Cal.day(ds); d.setHours(h, m, 0, 0); return d; },
+  plus(ds, n) { const d = Cal.day(ds); d.setDate(d.getDate() + n); return Cal.dstr(d); },
+  heb(s) { return (s || '').replace(/[֑-ׇ]/g, ''); },
+
+  url(lat, lon, candleMin) {
+    const s = new Date(); s.setDate(s.getDate() - 3);
+    const e = new Date(); e.setDate(e.getDate() + 120);
+    return 'https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&mf=on&ss=off&s=off&c=on' +
+      `&geo=pos&latitude=${lat}&longitude=${lon}&tzid=Asia/Jerusalem&b=${candleMin}&M=on&i=on` +
+      `&start=${Cal.dstr(s)}&end=${Cal.dstr(e)}`;
+  },
+
+  build(items) {
+    items = (items || []).filter(i => i && i.date && i.title);
+    const ev = [], holy = [];
+    const ytOn = {};                 // תאריך → מפתח חג מהתורה
+    const timeOn = (re, ds) => {     // זמן (הדלקה / סוף צום) בתאריך מסוים
+      const it = items.find(i => re.test(i.title) && i.date.slice(0, 10) === ds && i.date.length > 10);
+      return it ? new Date(it.date) : null;
+    };
+    const candlesOn = ds => {
+      const it = items.find(i => i.category === 'candles' && i.date.slice(0, 10) === ds);
+      return it ? new Date(it.date) : null;
+    };
+
+    items.forEach(i => {
+      if (i.category !== 'holiday' && i.category !== 'roshchodesh') return;
+      const rule = CAL_RULES.find(r => r[0].test(i.title));
+      if (!rule) return;
+      const [, key, kind] = rule;
+      const ds = i.date.slice(0, 10);
+      const name = Cal.heb(i.hebrew);
+      if (kind === 'yt') { ytOn[ds] = key; return; }
+      if (kind === 'erev') {
+        ev.push({ key, name, start: Cal.day(ds), end: candlesOn(ds) || Cal.at(ds, 16) });
+      } else if (kind === 'day') {
+        ev.push({ key, name, start: Cal.day(ds), end: Cal.day(Cal.plus(ds, 1)) });
+      } else if (kind === 'chanukah') {
+        const first = /1 Candle/i.test(i.title);
+        ev.push({ key, name, start: first ? Cal.at(ds, 16) : Cal.day(ds), end: Cal.day(Cal.plus(ds, 1)) });
+      } else if (kind === 'fast') {
+        ev.push({ key, name, start: Cal.at(ds, 4), end: timeOn(/^Fast ends/i, ds) || Cal.at(ds, 19) });
+      } else if (kind === 'erevTB') {
+        const end = timeOn(/^Fast ends/i, Cal.plus(ds, 1)) || Cal.at(Cal.plus(ds, 1), 20);
+        ev.push({ key, name, start: timeOn(/^Fast begins/i, ds) || Cal.at(ds, 19, 30), end });
+      } else if (kind === 'TB') {
+        if (!items.some(x => /^Erev Tish.?a B.?Av/i.test(x.title) && x.date.slice(0, 10) === Cal.plus(ds, -1))) {
+          ev.push({ key, name, start: Cal.at(Cal.plus(ds, -1), 19, 30), end: timeOn(/^Fast ends/i, ds) || Cal.at(ds, 20) });
+        }
+      } else if (kind === 'memorial') {
+        ev.push({ key, name, start: Cal.at(Cal.plus(ds, -1), 20), end: Cal.at(ds, 20) });
+      } else if (kind === 'atzmaut') {
+        ev.push({ key, name, start: Cal.at(Cal.plus(ds, -1), 20), end: Cal.day(Cal.plus(ds, 1)) });
+      }
+    });
+
+    // קטעי שבת/חג: מכל הדלקת נרות עד ההדלקה הבאה / ההבדלה
+    const marks = items.filter(i => (i.category === 'candles' || i.category === 'havdalah') && i.date.length > 10)
+      .map(i => ({ t: new Date(i.date), c: i.category })).sort((a, b) => a.t - b.t);
+    if (marks.length && marks[0].c === 'havdalah') marks.unshift({ t: new Date(marks[0].t.getTime() - 25 * 3600e3), c: 'candles' });
+    for (let k = 0; k < marks.length; k++) {
+      if (marks[k].c !== 'candles') continue;
+      const next = marks[k + 1];
+      const start = marks[k].t, end = next ? next.t : new Date(start.getTime() + 25 * 3600e3);
+      const ds = Cal.plus(Cal.dstr(start), 1);           // היום שהקטע שייך אליו
+      const isSat = Cal.day(ds).getDay() === 6;
+      const yt = ytOn[ds] || (!isSat ? (ytOn[Cal.plus(ds, -1)] || ytOn[Cal.plus(ds, 1)]) : null);
+      const kind = yt ? 'yt' : 'shabbat';
+      holy.push({ start, end, kind });
+      if (yt) ev.push({ key: yt, name: '', start, end, shabbat: isSat });
+      else ev.push({ key: 'shabbat', name: '', start, end });
+    }
+    Cal.events = ev.sort((a, b) => a.start - b.start);
+    Cal.holy = holy;
+  },
+
+  fromCache(cacheKey) {
+    try {
+      const c = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+      if (c && c.items) { Cal.build(c.items); Cal.loadedAt = c.t; return true; }
+    } catch (e) {}
+    return false;
+  },
+
+  async load(lat, lon, candleMin, cacheKey) {
+    try {
+      const r = await fetch(Cal.url(lat, lon, candleMin), { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json();
+      try { localStorage.setItem(cacheKey, JSON.stringify({ items: j.items, t: Date.now() })); } catch (e) {}
+      Cal.build(j.items);
+      Cal.loadedAt = Date.now();
+      return true;
+    } catch (e) {
+      Cal.fromCache(cacheKey);
+      return false;
+    }
+  },
+
+  greet(key, overrides) {
+    const base = GREET[key] || GREET.default;
+    const o = (overrides && overrides[key]) || {};
+    return {
+      key, label: base.label, when: base.when, prio: base.prio, solemn: base.solemn,
+      on: o.on !== false,
+      icon: o.icon || base.icon,
+      title: o.title != null && o.title !== '' ? o.title : base.title,
+      body: o.body != null ? o.body : base.body,
+      edited: !!(o.icon || (o.title != null && o.title !== '') || o.body != null)
+    };
+  },
+  fill(text, building, name) {
+    const out = (text || '').replace(/\{building\}/g, building || '').replace(/\{name\}/g, name || '').replace(/\n{2,}/g, '\n').trim();
+    if (!out && /\{name\}/.test(text || '')) return 'לכל דיירי ' + (building || '');   // אין שם יום מהלוח
+    return out;
+  },
+
+  activeAt(t, overrides) {
+    return Cal.events.filter(e => e.start <= t && t < e.end && Cal.greet(e.key, overrides).on)
+      .sort((a, b) => GREET[a.key].prio - GREET[b.key].prio);
+  },
+
+  // הברכה שמוצגת בזמן t
+  greetingAt(t, overrides, building) {
+    const act = Cal.activeAt(t, overrides);
+    const G = k => Cal.greet(k, overrides);
+    if (!act.length) {
+      const g = G('default');
+      return { id: '_g_default', key: 'default', icon: g.icon, title: g.title, body: Cal.fill(g.body, building, ''), solemn: false, auto: true };
+    }
+    const p = act[0], g = G(p.key);
+    let title = g.title, icon = g.icon, body = Cal.fill(g.body, building, p.name);
+    if (!g.solemn) {
+      if (p.key === 'shabbat') {
+        const other = act.find(e => e !== p && !G(e.key).solemn);
+        if (other) {
+          const og = G(other.key);
+          title = g.title + ' ו' + og.title;
+          body = Cal.fill(og.body, building, other.name) || body;
+        }
+      } else if (p.shabbat && G('shabbat').on) {
+        title = G('shabbat').title + ' ו' + g.title;
+      } else {
+        const rc = act.find(e => e !== p && e.key === 'roshchodesh');
+        if (rc) title = g.title + ' ו' + G('roshchodesh').title;
+      }
+    }
+    return { id: '_g_' + p.key + '_' + p.start.getTime(), key: p.key, icon, title, body, solemn: g.solemn, auto: true, end: p.end };
+  },
+
+  // הברכה הבאה (לא ברירת מחדל) אחרי t
+  nextGreeting(t, overrides) {
+    const e = Cal.events.filter(x => x.start > t && Cal.greet(x.key, overrides).on)
+      .sort((a, b) => a.start - b.start || GREET[a.key].prio - GREET[b.key].prio)[0];
+    return e ? { key: e.key, start: e.start, g: Cal.greet(e.key, overrides) } : null;
+  },
+
+  isHoly(t) { return Cal.holy.some(h => h.start <= t && t < h.end); },
+  nextHoly(t) { const h = Cal.holy.find(x => x.start > t); return h ? h.start : null; }
+};
+
+/* =========================================================
+   חזרתיות הודעות – ימים בשבוע / שעות / בזמן שבת-חג
+   ========================================================= */
+const DAY_SHORT = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+const Rep = {
+  days(m) { return (m.days == null || m.days === '') ? [] : String(m.days).split(',').map(Number).filter(n => n >= 0 && n <= 6); },
+  mins(hm) { if (!hm) return null; const [h, mm] = hm.split(':').map(Number); return h * 60 + mm; },
+  // האם ההודעה בתוך חלון החזרתיות שלה בזמן t
+  inWindow(m, t) {
+    const mode = m.repeatMode || 'none';
+    if (mode === 'none') return true;
+    if (mode === 'holy') return Cal.isHoly(t);
+    const d = new Date(t);
+    let days = Rep.days(m); if (!days.length) days = [0, 1, 2, 3, 4, 5, 6];
+    const now = d.getHours() * 60 + d.getMinutes();
+    const f = Rep.mins(m.timeFrom), to = Rep.mins(m.timeTo);
+    const today = d.getDay(), yday = (today + 6) % 7;
+    if (f == null && to == null) return days.includes(today);
+    if (f != null && to == null) return days.includes(today) && now >= f;
+    if (f == null && to != null) return days.includes(today) && now < to;
+    if (f < to) return days.includes(today) && now >= f && now < to;
+    return (days.includes(today) && now >= f) || (days.includes(yday) && now < to);   // חוצה חצות
+  },
+  isActive(m, t) {
+    const now = +t;
+    return m.active !== false && (!m.startAt || m.startAt <= now) && (!m.expiresAt || m.expiresAt > now) && Rep.inWindow(m, t);
+  },
+  // מתי ההודעה תוצג בפעם הבאה
+  next(m, t) {
+    const mode = m.repeatMode || 'none';
+    if (mode === 'holy') return Cal.nextHoly(t);
+    if (mode !== 'days') return null;
+    let days = Rep.days(m); if (!days.length) days = [0, 1, 2, 3, 4, 5, 6];
+    const f = Rep.mins(m.timeFrom) || 0;
+    const from = new Date(Math.max(+t, m.startAt || 0));
+    for (let i = 0; i <= 8; i++) {
+      const d = new Date(from); d.setDate(d.getDate() + i); d.setHours(Math.floor(f / 60), f % 60, 0, 0);
+      if (days.includes(d.getDay()) && d > from) {
+        if (m.expiresAt && d >= m.expiresAt) return null;
+        return d;
+      }
+    }
+    return null;
+  },
+  label(m) {
+    const mode = m.repeatMode || 'none';
+    if (mode === 'holy') return '🕯️ בזמן שבת/חג';
+    if (mode !== 'days') return '';
+    const days = Rep.days(m);
+    const key = days.slice().sort().join(',');
+    let dl;
+    if (!days.length || key === '0,1,2,3,4,5,6') dl = 'כל יום';
+    else if (key === '0,1,2,3,4') dl = 'א׳–ה׳';
+    else if (key === '5,6') dl = 'ו׳–ש׳';
+    else dl = days.slice().sort().map(n => DAY_SHORT[n]).join(', ');
+    const f = m.timeFrom || '', to = m.timeTo || '';
+    const tl = (f || to) ? ` ${f || '00:00'}–${to || '24:00'}` : ' · כל היום';
+    return '🔁 ' + dl + tl;
+  }
+};
+
 const ICONS = ['📢','⚠️','🔧','🧹','🛗','💧','⚡','🔥','🎉','🗑️','🅿️','📦','🔒','🌳','💰','🕯️','❤️','🏠'];
 const PR = { urgent: 3, important: 2, normal: 1 };
 const PR_LABEL = { normal: 'רגילה', important: 'חשובה', urgent: 'דחופה' };
@@ -344,10 +721,13 @@ function enter() {
   entered = true;
   base = db.ref('lobby/' + CONFIG.BUILDING_ID);
   base.child('messages').on('value', s => { msgs = s.val() || {}; renderList(); });
-  base.child('settings').on('value', s => { settings = s.val() || {}; fillSettings(); });
+  base.child('settings').on('value', s => { settings = s.val() || {}; fillSettings(); renderList(); });
   base.child('status/lastSeen').on('value', s => { lastSeen = s.val() || 0; renderStatus(); });
   setInterval(renderStatus, 30000);
   setInterval(renderList, 60000);
+  if (Cal.fromCache('admin_cal')) renderList();
+  Cal.load(CONFIG.LAT, CONFIG.LON, CONFIG.CANDLE_MINUTES, 'admin_cal').then(renderList);
+  setInterval(() => Cal.load(CONFIG.LAT, CONFIG.LON, CONFIG.CANDLE_MINUTES, 'admin_cal').then(renderList), 6 * 3600e3);
 }
 
 /* ===== מסך מלא ===== */
@@ -401,22 +781,40 @@ function stateOf(m) {
   const n = Date.now();
   if (m.active === false) return ['off', 'מושבתת'];
   if (m.expiresAt && m.expiresAt <= n) return ['exp', 'פג תוקף'];
-  if (m.startAt && m.startAt > n) return ['sched', 'מתוזמנת ל־' + fmt(m.startAt)];
-  return ['on', 'מוצגת עכשיו'];
+  const mode = m.repeatMode || 'none';
+  if (mode === 'none') {
+    if (m.startAt && m.startAt > n) return ['sched', 'מתוזמנת ל־' + fmt(m.startAt)];
+    return ['on', 'מוצגת עכשיו'];
+  }
+  if ((!m.startAt || m.startAt <= n) && Rep.inWindow(m, new Date())) return ['on', 'מוצגת עכשיו'];
+  const nx = Rep.next(m, new Date());
+  if (!nx) return mode === 'holy' && !Cal.loadedAt ? ['wait', 'ממתינה לשבת/חג'] : ['exp', 'לא תוצג שוב'];
+  return ['wait', 'תוצג ' + fmtWhen(nx)];
+}
+function fmtWhen(d) {
+  const t = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+  const a = new Date(); a.setHours(0, 0, 0, 0);
+  const b = new Date(d); b.setHours(0, 0, 0, 0);
+  const diff = Math.round((b - a) / 864e5);
+  if (diff === 0) return 'היום ב־' + t;
+  if (diff === 1) return 'מחר ב־' + t;
+  if (diff < 7) return 'ביום ' + DAY_SHORT[d.getDay()] + ' ב־' + t;
+  return 'ב־' + d.toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' }) + ' ' + t;
 }
 function renderList() {
   $('#topName').textContent = settings.buildingName || CONFIG.BUILDING_NAME;
   const list = $('#msgList'); list.innerHTML = '';
   const arr = Object.entries(msgs).map(([id, m]) => Object.assign({ id }, m));
   $('#emptyMsgs').classList.toggle('hidden', arr.length > 0);
-  const order = { on: 0, sched: 1, off: 2, exp: 3 };
+  renderGreetCard();
+  const order = { on: 0, sched: 1, wait: 1, off: 2, exp: 3 };
   arr.sort((a, b) => order[stateOf(a)[0]] - order[stateOf(b)[0]] ||
     (PR[b.priority] || 1) - (PR[a.priority] || 1) || (b.createdAt || 0) - (a.createdAt || 0));
 
   let lastGroup = null;
   arr.forEach(m => {
     const [st, stLabel] = stateOf(m);
-    const group = (st === 'on' || st === 'sched') ? 'פעילות' : 'לא מוצגות';
+    const group = (st === 'on' || st === 'sched' || st === 'wait') ? 'פעילות' : 'לא מוצגות';
     if (group !== lastGroup) {
       lastGroup = group;
       const h = document.createElement('div'); h.className = 'section-title'; h.textContent = group; list.appendChild(h);
@@ -426,7 +824,7 @@ function renderList() {
     c.className = 'mcard ' + prio + ((st === 'off' || st === 'exp') ? ' dim' : '');
     c.innerHTML = `
       <div class="m-head"><div class="m-icon"></div><div class="m-main"><div class="m-title"></div><div class="m-body"></div></div></div>
-      <div class="m-tags"><span class="tag ${st}"></span><span class="tag p-${prio}">${PR_LABEL[prio]}</span><span class="tag exp-tag"></span></div>
+      <div class="m-tags"><span class="tag ${st}"></span><span class="tag p-${prio}">${PR_LABEL[prio]}</span><span class="tag rep-tag rep"></span><span class="tag exp-tag"></span></div>
       <div class="m-actions">
         <button class="btn" data-act="edit">✏️ עריכה</button>
         <button class="btn" data-act="toggle">${m.active === false ? '▶️ הפעל' : '⏸️ השבת'}</button>
@@ -436,6 +834,8 @@ function renderList() {
     c.querySelector('.m-title').textContent = m.title || '';
     c.querySelector('.m-body').textContent = m.body || '';
     c.querySelector('.tag.' + st).textContent = stLabel;
+    const rt = c.querySelector('.rep-tag');
+    if (Rep.label(m)) rt.textContent = Rep.label(m); else rt.remove();
     const et = c.querySelector('.exp-tag');
     if (m.expiresAt && st !== 'exp') et.textContent = 'עד ' + fmt(m.expiresAt); else et.remove();
     c.querySelector('[data-act=edit]').onclick = () => openEditor(m.id);
@@ -490,6 +890,13 @@ function openEditor(id) {
     $('#fExp').value = toLocalInput(m.expiresAt);
     $$('#quickExp button').forEach(b => b.classList.toggle('sel', !m.expiresAt && b.dataset.d === '0'));
   } else setQuick(7);
+  repState = {
+    mode: (m && m.repeatMode) || 'none',
+    days: m ? Rep.days(m) : [],
+  };
+  $('#fFrom').value = (m && m.timeFrom) || '';
+  $('#fTo').value = (m && m.timeTo) || '';
+  renderRep();
   updateCount();
   $('#editor').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -549,7 +956,12 @@ $('#edSave').addEventListener('click', async () => {
   if (expiresAt && expiresAt <= Date.now()) { toast('תאריך הסיום כבר עבר'); return; }
   if (expiresAt && startAt && startAt >= expiresAt) { toast('תאריך ההתחלה אחרי הסיום'); return; }
   const dur = parseInt($('#fDur').value, 10);
+  if (repState.mode === 'days' && !repState.days.length) { toast('בחר לפחות יום אחד'); return; }
   const data = {
+    repeatMode: repState.mode,
+    days: repState.mode === 'days' ? repState.days.slice().sort().join(',') : null,
+    timeFrom: repState.mode === 'days' ? ($('#fFrom').value || null) : null,
+    timeTo: repState.mode === 'days' ? ($('#fTo').value || null) : null,
     icon: selIcon,
     title,
     body: $('#fBody').value.trim(),
@@ -574,6 +986,161 @@ $('#edSave').addEventListener('click', async () => {
   } catch (e) {
     toast('שגיאה בשמירה');
   } finally { btn.disabled = false; }
+});
+
+
+/* ===== חזרתיות בעורך ===== */
+let repState = { mode: 'none', days: [] };
+const dayChips = $('#dayChips');
+DAY_SHORT.forEach((d, i) => {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = d; b.dataset.d = i;
+  b.onclick = () => {
+    const k = repState.days.indexOf(i);
+    if (k >= 0) repState.days.splice(k, 1); else repState.days.push(i);
+    renderRep();
+  };
+  dayChips.appendChild(b);
+});
+$$('#repMode button').forEach(b => b.addEventListener('click', () => {
+  const was = repState.mode;
+  repState.mode = b.dataset.m;
+  if (was === 'none' && repState.mode !== 'none') {
+    // הודעה חוזרת – בדרך כלל ללא הגבלת תאריך
+    const q = document.querySelector('#quickExp button.sel');
+    if (q && q.dataset.d === '7') setQuick(0);
+  }
+  if (repState.mode === 'days' && !repState.days.length) repState.days = [];
+  renderRep();
+}));
+$$('#dayPresets button').forEach(b => b.addEventListener('click', () => {
+  repState.days = { all: [0, 1, 2, 3, 4, 5, 6], week: [0, 1, 2, 3, 4], weekend: [5, 6] }[b.dataset.p].slice();
+  renderRep();
+}));
+$('#fFrom').addEventListener('input', renderRep);
+$('#fTo').addEventListener('input', renderRep);
+function renderRep() {
+  $$('#repMode button').forEach(b => b.classList.toggle('sel', b.dataset.m === repState.mode));
+  $('#repDays').classList.toggle('hidden', repState.mode !== 'days');
+  $('#repHoly').classList.toggle('hidden', repState.mode !== 'holy');
+  dayChips.querySelectorAll('button').forEach(b => b.classList.toggle('sel', repState.days.includes(+b.dataset.d)));
+  const key = repState.days.slice().sort().join(',');
+  $$('#dayPresets button').forEach(b => b.classList.toggle('sel',
+    (b.dataset.p === 'all' && key === '0,1,2,3,4,5,6') || (b.dataset.p === 'week' && key === '0,1,2,3,4') || (b.dataset.p === 'weekend' && key === '5,6')));
+  const fake = { repeatMode: repState.mode, days: repState.days.join(','), timeFrom: $('#fFrom').value, timeTo: $('#fTo').value };
+  $('#repSum').textContent = repState.mode === 'none' ? '' :
+    (repState.mode === 'days' && !repState.days.length ? 'בחר ימים' : 'יוצג: ' + Rep.label(fake).replace('🔁 ', '').replace('🕯️ ', ''));
+}
+
+/* ===== ברכות אוטומטיות ===== */
+let gOpen = false, gEditKey = null, gIcon = null;
+function bname() { return settings.buildingName || CONFIG.BUILDING_NAME; }
+function fmtDate(d) {
+  return d.toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric', month: 'numeric' }) + ' ' +
+         d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+}
+function renderGreetCard() {
+  const box = $('#greetCard');
+  const ov = settings.greetings || {};
+  const now = new Date();
+  if (!Cal.loadedAt) {
+    box.innerHTML = '<div class="gcard"><div class="g-head"><b>✨ ברכות אוטומטיות</b></div><div class="g-sub">טוען לוח שנה…</div></div>';
+    return;
+  }
+  const g = Cal.greetingAt(now, ov, bname());
+  const nx = Cal.nextGreeting(now, ov);
+  box.innerHTML = `
+    <div class="gcard">
+      <div class="g-head"><b>✨ ברכות אוטומטיות</b><button id="gToggle">${gOpen ? 'סגור ▲' : 'כל הברכות ▼'}</button></div>
+      <div class="g-now${g.solemn ? ' solemn' : ''}"><div class="g-ic"></div><div><div class="g-t"></div><div class="g-b"></div></div></div>
+      <div class="g-sub"></div>
+      <div class="g-next"></div>
+      <div class="g-list${gOpen ? '' : ' hidden'}" id="gList"></div>
+    </div>`;
+  box.querySelector('.g-ic').textContent = g.icon;
+  box.querySelector('.g-t').textContent = g.title;
+  box.querySelector('.g-b').textContent = g.body;
+  box.querySelector('.g-sub').textContent = g.key === 'default'
+    ? 'מוצגת עכשיו כשאין הודעות אחרות בלוח'
+    : `מוצגת עכשיו · ${GREET[g.key].label}${g.end ? ' · עד ' + fmtDate(g.end) : ''} · מצטרפת לסבב ההודעות`;
+  box.querySelector('.g-next').textContent = nx ? `הבאה: ${nx.g.icon} ${nx.g.title} · ${nx.g.label} · ${fmtDate(nx.start)}` : '';
+  $('#gToggle').onclick = () => { gOpen = !gOpen; renderGreetCard(); };
+  if (gOpen) renderGreetList();
+}
+function renderGreetList() {
+  const list = $('#gList'); list.innerHTML = '';
+  const ov = settings.greetings || {};
+  GREETINGS.forEach(base => {
+    const g = Cal.greet(base.key, ov);
+    const row = document.createElement('div');
+    row.className = 'g-row' + (g.on ? '' : ' off');
+    row.innerHTML = `<div class="gi"></div><div class="gm"><div class="gl"></div><div class="gw"></div><div class="gp"></div></div>
+      <button title="עריכה">✏️</button>${base.key === 'default' ? '' : '<input type="checkbox" title="הפעלה">'}`;
+    row.querySelector('.gi').textContent = g.icon;
+    row.querySelector('.gl').textContent = base.label + (base.solemn ? ' · עיצוב שקט' : '');
+    row.querySelector('.gw').textContent = base.when;
+    row.querySelector('.gp').innerHTML = (g.edited ? '<i>✎ </i>' : '');
+    row.querySelector('.gp').append(document.createTextNode(g.title + (g.body ? ' · ' + Cal.fill(g.body, bname(), '…').replace(/\n/g, ' ') : '')));
+    row.querySelector('button').onclick = () => openGreetEditor(base.key);
+    const cb = row.querySelector('input');
+    if (cb) {
+      cb.checked = g.on;
+      cb.onchange = async () => {
+        try { await base_ref().child('settings/greetings/' + base.key + '/on').set(cb.checked); toast(cb.checked ? 'הברכה הופעלה' : 'הברכה כובתה'); }
+        catch (e) { toast('שגיאה בשמירה'); cb.checked = !cb.checked; }
+      };
+    }
+    list.appendChild(row);
+  });
+}
+function base_ref() { return base; }
+const G_ICONS = Array.from(new Set(GREETINGS.map(g => g.icon).concat(['✡️', '🎉', '🎊', '🌸', '💐', '⭐', '🙏', '🏠', '❤️', '🎈'])));
+function openGreetEditor(key) {
+  gEditKey = key;
+  const g = Cal.greet(key, settings.greetings || {});
+  gIcon = g.icon;
+  $('#gEdTitle').textContent = 'עריכת ברכה · ' + g.label;
+  $('#gEdWhen').textContent = 'מתי: ' + g.when;
+  $('#gTitle').value = g.title;
+  $('#gBody').value = g.body;
+  renderGIcons();
+  $('#gEditor').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function renderGIcons() {
+  const grid = $('#gIconGrid'); grid.innerHTML = '';
+  const icons = G_ICONS.includes(gIcon) ? G_ICONS : [gIcon].concat(G_ICONS);
+  icons.forEach(ic => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = ic;
+    if (ic === gIcon) b.classList.add('sel');
+    b.onclick = () => { gIcon = ic; renderGIcons(); };
+    grid.appendChild(b);
+  });
+}
+function closeGreetEditor() {
+  $('#gEditor').classList.add('hidden');
+  document.body.style.overflow = '';
+  gEditKey = null;
+}
+$('#gEdClose').addEventListener('click', closeGreetEditor);
+$('#gEditor').addEventListener('click', e => { if (e.target.id === 'gEditor') closeGreetEditor(); });
+$('#gSave').addEventListener('click', async () => {
+  const k = gEditKey; if (!k) return;
+  const def = GREET[k];
+  const title = $('#gTitle').value.trim(), body = $('#gBody').value.trim();
+  if (!title) { toast('נא למלא כותרת'); return; }
+  const cur = (settings.greetings || {})[k] || {};
+  const data = { on: cur.on !== false };
+  if (gIcon !== def.icon) data.icon = gIcon;
+  if (title !== def.title) data.title = title;
+  if (body !== def.body) data.body = body;
+  try { await base.child('settings/greetings/' + k).set(data); toast('הברכה נשמרה'); closeGreetEditor(); }
+  catch (e) { toast('שגיאה בשמירה'); }
+});
+$('#gRestore').addEventListener('click', async () => {
+  const k = gEditKey; if (!k) return;
+  const cur = (settings.greetings || {})[k] || {};
+  try { await base.child('settings/greetings/' + k).set({ on: cur.on !== false }); toast('שוחזר לנוסח המקורי'); closeGreetEditor(); }
+  catch (e) { toast('שגיאה בשמירה'); }
 });
 
 /* ===== הגדרות ===== */
