@@ -160,6 +160,19 @@ body.night #nightVeil{opacity:.6}
   box-shadow:0 .5em 1.5em rgba(0,0,0,.4);animation:fsPulse 2.4s ease-in-out infinite}
 body.started.fs-off #fsHint{display:flex}
 @keyframes fsPulse{50%{border-color:rgba(214,174,98,1)}}
+
+/* ===== מוזיקה ===== */
+#musicNote{position:fixed;left:2vw;bottom:9vh;z-index:30;display:flex;align-items:center;gap:.5em;max-width:30vw;padding:.45em 1em;border-radius:2em;
+  background:rgba(10,17,32,.6);color:var(--muted);font-size:max(12px,calc(1 * var(--u)));opacity:0;transition:opacity 1.5s;pointer-events:none}
+#musicNote.show{opacity:.85}
+#musicNote b{color:var(--gold);animation:noteBob 2s ease-in-out infinite}
+#musicNoteText{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@keyframes noteBob{50%{transform:translateY(-.15em)}}
+body.started.fs-off #musicNote{bottom:16vh}
+#musicHint{position:fixed;left:2vw;bottom:16vh;z-index:65;display:none;align-items:center;gap:.6em;padding:.7em 1.2em;border-radius:2em;
+  background:rgba(10,17,32,.88);border:1px solid rgba(214,174,98,.5);color:var(--gold2);font-size:max(14px,calc(1.3 * var(--u)));font-weight:600;animation:fsPulse 2.4s ease-in-out infinite}
+body.started.music-blocked #musicHint{display:flex}
+body.started.music-blocked:not(.fs-off) #musicHint{bottom:9vh}
 .lic-logo{font-size:56px}
 .lic-box h1{font-size:28px;margin:10px 0 6px;color:var(--gold2)}
 .lic-box p{color:var(--muted);font-size:16px;margin-bottom:20px}
@@ -266,6 +279,8 @@ body.started.fs-off #fsHint{display:flex}
   </div>
 </div>
 
+<div id="musicNote"><b>♪</b><span id="musicNoteText"></span></div>
+<div id="musicHint">🎵 לחץ OK בשלט להפעלת המוזיקה</div>
 <div id="fsHint">⛶ <span id="fsHintText">לחץ OK בשלט למסך מלא</span></div>
 
 <div id="rotateHint"><b>📱↻</b>סובב את הטלפון לרוחב<br>כדי לראות את מסך הלובי</div>
@@ -986,6 +1001,7 @@ function checkSchedule() {
 async function loadCal() {
   await Cal.load(CONFIG.LAT, CONFIG.LON, CONFIG.CANDLE_MINUTES, 'lobby_cal');
   checkSchedule();
+  Music.apply();
 }
 function nextMessage() {
   rotStarted = true;
@@ -1055,7 +1071,8 @@ function showAlert(m) {
   $('#aBody').textContent = m.body || '';
   const a = $('#alert');
   a.classList.remove('show'); void a.offsetWidth; a.classList.add('show');
-  setTimeout(() => a.classList.remove('show'), ALERT_MS);
+  Music.duck = true;
+  setTimeout(() => { a.classList.remove('show'); Music.duck = false; }, ALERT_MS);
 }
 function onMessages(list) {
   messages = list;
@@ -1111,16 +1128,18 @@ function initFirebase() {
       const v = s.val() || {};
       if (loadedReloadAt === null) loadedReloadAt = v.reloadAt || 0;
       else if (v.reloadAt && v.reloadAt !== loadedReloadAt) { location.reload(); return; }
-      applySettings(Object.assign({ greetings: {} }, v));
+      applySettings(Object.assign({ greetings: {}, playlist: {}, music: {} }, v));
+      Music.command(v.musicCmd);
+      Music.apply();
     });
 
-    db.ref('.info/connected').on('value', s => { fbConnected = !!s.val(); renderNetStatus(); if (fbConnected) heartbeat(); });
+    db.ref('.info/connected').on('value', s => { fbConnected = !!s.val(); renderNetStatus(); if (fbConnected) { heartbeat(); Music.statusSig = ''; Music.setState(Music.state, Music.reason); } });
     setInterval(heartbeat, 120000);
   } catch (e) { console.warn('Firebase', e); }
 }
 function heartbeat() {
   if (!db) return;
-  db.ref('lobby/' + CONFIG.BUILDING_ID + '/status').set({
+  db.ref('lobby/' + CONFIG.BUILDING_ID + '/status').update({
     lastSeen: firebase.database.ServerValue.TIMESTAMP,
     device: deviceId,
     screen: window.innerWidth + 'x' + window.innerHeight
@@ -1141,6 +1160,7 @@ function minuteJobs() {
   if (hm === '04:00' && Date.now() - startedAt > 3600e3) location.reload();   // ריענון יומי
   const c = store.get('lobby_shabbat'); if (c) renderShabbat(c);
   checkSchedule();
+  Music.apply();
 }
 function burnShift() {   // הגנה מצריבת מסך
   const r = (a, b) => Math.round(a + Math.random() * (b - a));
@@ -1186,6 +1206,248 @@ function initFullscreen() {
 }
 
 /* =========================================================
+   מוזיקה – מקורות וימים מיוחדים
+   ========================================================= */
+// ads: none | maybe | some | many
+const MUSIC_SOURCES = [
+  { key: 'playlist',     name: 'הרשימה שלי',                    url: '',
+    ads: 'none',  adsText: '0% פרסומות',            license: false,
+    desc: 'שירים שאתה בוחר (קישורי MP3), בניגון אקראי. מומלץ: מוזיקה חופשית לשימוש מ־Pixabay Music.' },
+  { key: 'soma_groove',  name: 'SomaFM · Groove Salad',         url: 'https://ice1.somafm.com/groovesalad-128-mp3',
+    ads: 'none',  adsText: '0% פרסומות',            license: true,
+    desc: 'אמביינט ו־downtempo רגוע ברצף. רדיו אינטרנט שממומן מתרומות מאזינים.' },
+  { key: 'soma_lounge',  name: 'SomaFM · Illinois Street Lounge', url: 'https://ice1.somafm.com/illstreet-128-mp3',
+    ads: 'none',  adsText: '0% פרסומות',            license: true,
+    desc: 'לאונג׳ קלאסי וג׳אז קליל, אווירת מלון. ממומן מתרומות מאזינים.' },
+  { key: 'soma_lush',    name: 'SomaFM · Lush',                 url: 'https://ice1.somafm.com/lush-128-mp3',
+    ads: 'none',  adsText: '0% פרסומות',            license: true,
+    desc: 'שירה רכה ואלקטרוני עדין. ממומן מתרומות מאזינים.' },
+  { key: 'paradise',     name: 'Radio Paradise · Mellow',       url: 'https://stream.radioparadise.com/mellow-128',
+    ads: 'none',  adsText: '0% פרסומות (לא מאומת)', license: true,
+    desc: 'מוזיקה רגועה ומגוונת. רדיו שממומן ממאזינים.' },
+  { key: 'kan_classic',  name: 'כאן קול המוסיקה',               url: 'https://kanliveicy.media.kan.org.il/icy/kankolhamusica_mp3',
+    ads: 'maybe', adsText: '0–2% (לא בטוח)',        license: true,
+    desc: 'מוזיקה קלאסית. שידור ציבורי, ייתכנו הודעות חסות קצרות.' },
+  { key: 'kan88',        name: 'כאן 88',                        url: 'https://kanliveicy.media.kan.org.il/icy/kan88_mp3',
+    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
+    desc: 'מוזיקה איכותית, עם חדשות ודיבורים.' },
+  { key: 'glglz',        name: 'גלגלצ',                         url: 'https://glzwizzlv.bynetcdn.com/glglz_mp3',
+    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
+    desc: 'שירים ישראליים ולועזיים, חדשות ותשדירים. בימי זיכרון – בעיקר שירי זיכרון שקטים.' },
+  { key: 'glz',          name: 'גלי צה״ל',                      url: 'https://glzwizzlv.bynetcdn.com/glz_mp3',
+    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
+    desc: 'דיבור, חדשות ומוזיקה. בימי זיכרון – תוכניות זיכרון וסיפורים.' },
+  { key: 'kanbet',       name: 'כאן רשת ב׳',                    url: 'https://kanliveicy.media.kan.org.il/icy/kanbet_mp3',
+    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
+    desc: 'בעיקר חדשות ודיבור. בימי זיכרון – סיפורים ועדויות.' },
+  { key: 'custom',       name: 'קישור משלי / תחנה מסחרית',     url: '',
+    ads: 'many',  adsText: 'בתחנות מסחריות כ־15–20%', license: true,
+    desc: 'מדביקים קישור לכל תחנה אחרת. תחנות מסחריות כוללות הרבה פרסומות ודיבורים – לא מומלץ ללובי.' }
+];
+const MSRC = Object.fromEntries(MUSIC_SOURCES.map(s => [s.key, s]));
+
+// ימים מיוחדים: שקט / רגיל / תחנה מסוימת (שבת וחגים מהתורה – תמיד שקט)
+const MUSIC_SPECIAL = [
+  { key: 'shoah',        label: 'יום השואה',      events: ['shoah'],                               def: 'glglz' },
+  { key: 'zikaron',      label: 'יום הזיכרון',    events: ['zikaron'],                             def: 'glglz' },
+  { key: 'tishabav',     label: 'תשעה באב',       events: ['tishabav'],                            def: 'silent' },
+  { key: 'fasts',        label: 'צומות אחרים',    events: ['gedaliah', 'tevet', 'esther', 'tammuz'], def: 'normal' },
+  { key: 'cholhamoed',   label: 'חול המועד',      events: ['cholSukkot', 'cholPesach'],             def: 'normal' },
+  { key: 'yerushalayim', label: 'יום ירושלים',    events: ['yerushalayim'],                        def: 'normal' },
+  { key: 'atzmaut',      label: 'יום העצמאות',    events: ['atzmaut'],                             def: 'normal' }
+];
+const MUSIC_DEFAULTS = { enabled: false, source: 'soma_groove', customUrl: '', volume: 60, muted: false, hoursFrom: '07:00', hoursTo: '22:00', special: {}, licenseAck: false };
+
+/* =========================================================
+   נגן המוזיקה במסך
+   ========================================================= */
+const Music = {
+  audio: null, want: false, srcKey: '', curUrl: '', track: '',
+  state: 'off', reason: '', blocked: false, paused: false, duck: false,
+  queue: [], lastId: null, errCount: 0, retryT: null, statusSig: '', lastCmdAt: null, cmdInit: false,
+
+  cfg() {
+    const c = Object.assign({}, MUSIC_DEFAULTS, settings.music || {});
+    c.special = Object.assign({}, (settings.music || {}).special || {});
+    return c;
+  },
+
+  init() {
+    const a = this.audio = new Audio();
+    a.preload = 'none';
+    a.volume = 0;
+    a.addEventListener('ended', () => this.onEnded());
+    a.addEventListener('error', () => { if (this.want) this.onError(); });
+    a.addEventListener('playing', () => { this.blocked = false; this.errCount = 0; this.setState('playing', ''); });
+    setInterval(() => this.fadeStep(), 100);
+    ['keydown', 'click', 'touchend'].forEach(ev => document.addEventListener(ev, () => this.unlock(), { passive: true }));
+    this.apply();
+  },
+
+  inHours(from, to, d) {
+    const m = s => { if (!s) return null; const [h, mm] = s.split(':').map(Number); return h * 60 + mm; };
+    const f = m(from), t = m(to), n = d.getHours() * 60 + d.getMinutes();
+    if (f == null || t == null || f === t) return true;
+    return f < t ? (n >= f && n < t) : (n >= f || n < t);
+  },
+
+  // מה צריך לנגן עכשיו
+  decide() {
+    const c = this.cfg(), now = new Date();
+    if (!c.enabled) return { play: false, state: 'off', reason: 'כבוי' };
+    if (Cal.isHoly(now)) return { play: false, state: 'silent', reason: 'שבת / חג' };
+    if (!Cal.loadedAt) {           // אין לוח שנה – זהירות בשישי-שבת
+      const d = now.getDay(), h = now.getHours();
+      if ((d === 5 && h >= 15) || (d === 6 && h < 20)) return { play: false, state: 'silent', reason: 'שבת' };
+    }
+    let src = c.source, special = '';
+    const act = Cal.events.filter(e => e.start <= now && now < e.end).map(e => e.key);
+    for (const sd of MUSIC_SPECIAL) {
+      if (!sd.events.some(k => act.includes(k))) continue;
+      const v = c.special[sd.key] || sd.def;
+      if (v === 'silent') return { play: false, state: 'silent', reason: sd.label };
+      if (v !== 'normal' && MSRC[v]) { src = v; special = sd.label; }
+      break;
+    }
+    if (!this.inHours(c.hoursFrom, c.hoursTo, now)) return { play: false, state: 'silent', reason: 'מחוץ לשעות ההשמעה' };
+    if (this.paused) return { play: false, state: 'paused', reason: 'נעצר מרחוק' };
+    return { play: true, src, special };
+  },
+
+  apply() {
+    if (!this.audio) return;
+    const d = this.decide();
+    if (!d.play) {
+      this.want = false;
+      clearTimeout(this.retryT);
+      this.blocked = false;
+      this.setState(d.state, d.reason);
+      return;
+    }
+    this.want = true;
+    this.special = d.special;
+    if (d.src !== this.srcKey || (d.src === 'custom' && this.cfg().customUrl !== this.curUrl) || this.audio.paused && !this.blocked) {
+      this.start(d.src);
+    }
+  },
+
+  start(src) {
+    clearTimeout(this.retryT);
+    this.srcKey = src;
+    if (src === 'playlist') return this.nextTrack();
+    const url = src === 'custom' ? this.cfg().customUrl : (MSRC[src] || {}).url;
+    if (!url) return this.setState('error', src === 'custom' ? 'לא הוגדר קישור' : 'מקור לא תקין');
+    this.load(url, (MSRC[src] || {}).name || 'תחנה');
+  },
+
+  resolve(u) { return /^https?:\/\//i.test(u) ? u : new URL(u.replace(/^\//, ''), location.href).href; },
+
+  load(url, name) {
+    this.curUrl = url;
+    this.track = name;
+    const a = this.audio;
+    a.volume = 0;
+    a.src = this.resolve(url);
+    const p = a.play();
+    if (p && p.catch) p.catch(e => {
+      if (e && e.name === 'NotAllowedError') { this.blocked = true; this.setState('blocked', 'ממתין ללחיצת OK במסך'); }
+      else if (this.want) this.onError();
+    });
+  },
+
+  playlistItems() {
+    return Object.entries(settings.playlist || {})
+      .map(([id, t]) => Object.assign({ id }, t))
+      .filter(t => t.url && t.active !== false);
+  },
+  nextTrack() {
+    const items = this.playlistItems();
+    if (!items.length) return this.setState('error', 'הרשימה שלי ריקה');
+    this.queue = this.queue.filter(id => items.some(t => t.id === id));
+    if (!this.queue.length) {
+      this.queue = items.map(t => t.id).sort(() => Math.random() - .5);
+      if (this.queue.length > 1 && this.queue[0] === this.lastId) this.queue.push(this.queue.shift());
+    }
+    const id = this.queue.shift(), t = items.find(x => x.id === id);
+    this.lastId = id;
+    this.load(t.url, t.title || decodeURIComponent(t.url.split('/').pop()));
+  },
+
+  onEnded() {
+    if (!this.want) return;
+    if (this.srcKey === 'playlist') this.nextTrack();
+    else this.retryT = setTimeout(() => this.apply(), 5000);
+  },
+  onError() {
+    clearTimeout(this.retryT);
+    this.errCount++;
+    if (this.srcKey === 'playlist') {
+      if (this.errCount >= Math.max(3, this.playlistItems().length)) {
+        this.setState('error', 'קישורי הרשימה לא מתנגנים');
+        this.retryT = setTimeout(() => { this.errCount = 0; this.srcKey = ''; this.apply(); }, 5 * 60e3);
+      } else this.retryT = setTimeout(() => this.nextTrack(), 2000);
+    } else {
+      this.setState('error', 'התחנה לא זמינה – מנסה שוב');
+      this.retryT = setTimeout(() => { this.srcKey = ''; this.apply(); }, 60e3);
+    }
+  },
+
+  unlock() {
+    if (this.blocked && this.want) {
+      const p = this.audio.play();
+      if (p && p.catch) p.catch(() => {});
+    }
+  },
+
+  // עלייה וירידה הדרגתית בעוצמה
+  fadeStep() {
+    const a = this.audio; if (!a) return;
+    const c = this.cfg();
+    let target = (this.want && !a.paused) ? (c.muted ? 0 : Math.max(0, Math.min(100, +c.volume || 0)) / 100) : 0;
+    if (this.duck) target *= 0.25;
+    if (this.srcKey === 'playlist' && isFinite(a.duration) && a.duration - a.currentTime < 3) target = 0;
+    const step = 0.03;
+    const v = a.volume;
+    a.volume = Math.abs(target - v) <= step ? target : v + Math.sign(target - v) * step;
+    if (!this.want && !a.paused && a.volume === 0) {
+      a.pause();
+      a.removeAttribute('src');
+      try { a.load(); } catch (e) {}
+      this.srcKey = '';
+    }
+  },
+
+  command(v) {
+    if (!this.cmdInit) { this.cmdInit = true; this.lastCmdAt = (v && v.at) || 0; return; }   // פקודה ישנה מלפני הטעינה
+    if (!v || !v.at || v.at === this.lastCmdAt) return;
+    this.lastCmdAt = v.at;
+    if (v.action === 'pause') { this.paused = true; this.apply(); }
+    else if (v.action === 'play') { this.paused = false; this.srcKey = ''; this.apply(); }
+    else if (v.action === 'next') { if (this.srcKey === 'playlist' && this.want) this.nextTrack(); else { this.srcKey = ''; this.apply(); } }
+  },
+
+  setState(state, reason) {
+    this.state = state; this.reason = reason;
+    const note = $('#musicNote');
+    if (note) {
+      note.classList.toggle('show', state === 'playing');
+      $('#musicNoteText').textContent = this.track;
+    }
+    document.body.classList.toggle('music-blocked', state === 'blocked');
+    const sig = [state, reason, this.track, this.srcKey].join('|');
+    if (sig === this.statusSig) return;
+    this.statusSig = sig;
+    if (typeof db !== 'undefined' && db) {
+      db.ref('lobby/' + CONFIG.BUILDING_ID + '/status/music').set({
+        state, reason: reason || '', track: state === 'playing' ? this.track : '',
+        source: this.srcKey || '', special: this.special || '',
+        at: firebase.database.ServerValue.TIMESTAMP
+      }).catch(() => {});
+    }
+  }
+};
+
+/* =========================================================
    הפעלה
    ========================================================= */
 let started = false;
@@ -1211,6 +1473,7 @@ function start() {
 
   nextMessage();
   initFirebase();
+  Music.init();
 
   setInterval(minuteJobs, 60e3);
   setInterval(burnShift, 4 * 60e3);

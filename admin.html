@@ -110,6 +110,53 @@ label.f{display:block;font-size:14px;color:var(--muted);margin:16px 0 6px;font-w
 .g-row button{background:var(--card2);border:0;border-radius:10px;width:38px;height:38px;font-size:16px;cursor:pointer}
 .g-row input{width:22px;height:22px;accent-color:var(--gold)}
 
+/* מוזיקה */
+.tabs .tab{font-size:14px;padding:11px 4px}
+.ms-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-top:12px}
+.ms-state{font-weight:700;font-size:16px}
+.ms-track{font-size:13px;color:var(--gold2);margin-top:3px}
+.ms-on{display:flex;align-items:center;gap:8px;font-weight:600;white-space:nowrap}
+.ms-on input{width:22px;height:22px;accent-color:var(--gold)}
+.ms-ctl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.ms-ctl button{padding:11px 4px;font-size:14px}
+.ms-ctl button.on{background:rgba(255,68,88,.18);color:#ff8a96}
+input[type=range]{width:100%;accent-color:var(--gold);padding:0;background:none;border:0;height:34px}
+.src-card{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer}
+.src-card.sel{border-color:var(--gold);background:var(--card2)}
+.src-radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--muted);flex:0 0 auto;margin-top:2px}
+.src-card.sel .src-radio{border-color:var(--gold);background:radial-gradient(circle,var(--gold) 45%,transparent 50%)}
+.src-main{flex:1;min-width:0}
+.src-main b{font-size:15px}
+.src-tags{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 4px}
+.src-tags .t{font-size:11.5px;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.07);color:var(--muted)}
+.src-tags .t.free{background:rgba(60,207,142,.12);color:var(--ok)}
+.src-tags .t.ads-none{background:rgba(60,207,142,.12);color:var(--ok)}
+.src-tags .t.ads-maybe,.src-tags .t.ads-some{background:rgba(255,180,77,.13);color:#ffc876}
+.src-tags .t.ads-many{background:rgba(255,68,88,.14);color:#ff8a96}
+.src-tags .t.lic{background:rgba(124,196,255,.1);color:#9fd2ff}
+.src-desc{font-size:13px;color:#cfd5e3;line-height:1.45}
+.src-test{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:0;background:var(--card2);font-size:15px;cursor:pointer}
+.pl-row{display:flex;align-items:center;gap:6px;padding:10px 0;border-bottom:1px solid var(--line)}
+.pl-row:last-child{border-bottom:0}
+.pl-row.off .pl-main{opacity:.45}
+.pl-row input{width:20px;height:20px;accent-color:var(--gold);flex:0 0 auto}
+.pl-main{flex:1;min-width:0}
+.pl-t{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-u{font-size:11px;color:var(--muted);direction:ltr;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-row button{flex:0 0 auto;width:34px;height:34px;border:0;border-radius:10px;background:var(--card2);font-size:14px;cursor:pointer}
+.pl-row button.danger{background:rgba(255,68,88,.15)}
+.row{display:flex;gap:8px;margin-top:10px}
+.row .btn{flex:1}
+.sp-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.sp-row:last-child{border-bottom:0}
+.sp-row span{font-weight:600}
+.sp-row select{background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:10px;padding:9px;max-width:60%}
+.warn-box{background:rgba(255,180,77,.08);border:1px solid rgba(255,180,77,.35);border-radius:14px;padding:14px;margin:14px 0;font-size:13.5px;line-height:1.6;color:#f3dcb4}
+.warn-box b{color:#ffc876;font-size:15px}
+.warn-box ul{margin:6px 18px 6px 0}
+.warn-box label{display:flex;gap:8px;align-items:center;margin-top:8px;font-weight:600}
+.warn-box input{width:20px;height:20px;accent-color:var(--gold)}
+
 .fab{position:fixed;left:20px;bottom:calc(22px + env(safe-area-inset-bottom));width:62px;height:62px;border-radius:50%;border:0;
   background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1307;font-size:34px;font-weight:300;box-shadow:0 10px 30px rgba(0,0,0,.45);cursor:pointer;z-index:20}
 
@@ -212,6 +259,7 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
   </header>
   <nav class="tabs">
     <button class="tab active" data-tab="msgs">📋 הודעות</button>
+    <button class="tab" data-tab="music">🎵 מוזיקה</button>
     <button class="tab" data-tab="settings">⚙️ הגדרות</button>
   </nav>
 
@@ -219,6 +267,70 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
     <div id="greetCard"></div>
     <div id="msgList"></div>
     <div class="empty hidden" id="emptyMsgs">אין הודעות עדיין.<br>לחץ על ＋ כדי לפרסם הודעה לדיירים.</div>
+  </section>
+
+  <section class="pane hidden" id="pane-music">
+    <div class="set-card">
+      <div class="ms-head">
+        <div><div class="ms-state" id="msState">⚪ …</div><div class="ms-track" id="msTrack"></div></div>
+        <label class="ms-on">פעיל <input type="checkbox" id="mEnabled"></label>
+      </div>
+      <div class="ms-ctl">
+        <button class="btn" id="mPlay">▶ הפעל</button>
+        <button class="btn" id="mPause">⏸ עצור</button>
+        <button class="btn" id="mNext">⏭ הבא</button>
+        <button class="btn" id="mMute">🔇 השתק</button>
+      </div>
+      <label class="f">עוצמה · <span id="mVolVal"></span></label>
+      <input type="range" id="mVol" min="0" max="100" step="5">
+      <div class="hint">יחסית לעוצמת הטלוויזיה. מומלץ להשאיר את הטלוויזיה על 80% ולשלוט מכאן.<br>
+        אחרי הדלקת הטלוויזיה ייתכן שיידרש לחיצת OK אחת במסך – הסטטוס למעלה יראה "ממתין ללחיצת OK".</div>
+    </div>
+
+    <div class="section-title">📻 מקור המוזיקה</div>
+    <div id="mSources"></div>
+    <div class="set-card hidden" id="mCustomBox">
+      <label class="f">קישור לתחנה</label>
+      <input id="mCustomUrl" dir="ltr" placeholder="https://...">
+      <div class="row"><button class="btn" id="mCustomTest">▶ נסה</button><button class="btn primary" id="mCustomSave">שמור קישור</button></div>
+    </div>
+
+    <div class="section-title">🎶 הרשימה שלי</div>
+    <div class="set-card">
+      <div id="mPlaylist"></div>
+      <label class="f">הוספת שיר</label>
+      <input id="mpTitle" placeholder="שם השיר (לא חובה)">
+      <input id="mpUrl" dir="ltr" placeholder="https://…/song.mp3  או  music/song.mp3" style="margin-top:8px">
+      <div class="row"><button class="btn" id="mpTest">▶ נסה</button><button class="btn primary" id="mpAdd">＋ הוסף</button></div>
+      <div class="hint">איך מוסיפים שירים חופשיים: Pixabay Music ← בוחרים שיר ← הורדה ← מעלים את הקובץ לתיקייה <span dir="ltr">music</span> בריפו ← מדביקים כאן <span dir="ltr">music/שם-הקובץ.mp3</span>. אפשר גם קישור ישיר לכל קובץ MP3.</div>
+    </div>
+
+    <div class="section-title">🕐 שעות השמעה</div>
+    <div class="set-card">
+      <div class="row2" style="padding-top:12px">
+        <div><div class="hint">משעה</div><input type="time" id="mFrom" dir="ltr"></div>
+        <div><div class="hint">עד שעה</div><input type="time" id="mTo" dir="ltr"></div>
+      </div>
+      <div class="hint">ריק = כל היום.</div>
+      <div class="row"><button class="btn primary" id="mHoursSave">שמור שעות</button></div>
+    </div>
+
+    <div class="section-title">📅 ימים מיוחדים</div>
+    <div class="set-card">
+      <div class="hint" style="padding-top:10px">🕯️ בשבת ובחגים מהתורה (ראש השנה, יום כיפור, סוכות, שמיני עצרת, פסח ראשון ושביעי, שבועות) – תמיד שקט, מהדלקת הנרות עד הצאת.</div>
+      <div id="mSpecial"></div>
+    </div>
+
+    <div class="warn-box">
+      <b>⚠️ שים לב – זכויות יוצרים</b><br>
+      השמעת מוזיקה במקום משותף לציבור עשויה לחייב רישיון מאקו״ם ומגופי התמלוגים, גם אם המקור חינמי.
+      <ul>
+        <li><b style="font-size:13.5px">מוזיקה חופשית לשימוש</b> (למשל Pixabay Music) – בדרך כלל ללא צורך ברישיון.</li>
+        <li><b style="font-size:13.5px">תחנות רדיו ושירים מסחריים</b> – ייתכן שיידרש רישיון השמעה.</li>
+      </ul>
+      האחריות לבדיקת הרישוי היא על מפעיל המסך. לבירור: אקו״ם – <span dir="ltr">acum.org.il</span>
+      <label><input type="checkbox" id="mAck"> הבנתי</label>
+    </div>
   </section>
 
   <section class="pane hidden" id="pane-settings">
@@ -661,6 +773,59 @@ const Rep = {
   }
 };
 
+/* =========================================================
+   מוזיקה – מקורות וימים מיוחדים
+   ========================================================= */
+// ads: none | maybe | some | many
+const MUSIC_SOURCES = [
+  { key: 'playlist',     name: 'הרשימה שלי',                    url: '',
+    ads: 'none',  adsText: '0% פרסומות',            license: false,
+    desc: 'שירים שאתה בוחר (קישורי MP3), בניגון אקראי. מומלץ: מוזיקה חופשית לשימוש מ־Pixabay Music.' },
+  { key: 'soma_groove',  name: 'SomaFM · Groove Salad',         url: 'https://ice1.somafm.com/groovesalad-128-mp3',
+    ads: 'none',  adsText: '0% פרסומות',            license: true,
+    desc: 'אמביינט ו־downtempo רגוע ברצף. רדיו אינטרנט שממומן מתרומות מאזינים.' },
+  { key: 'soma_lounge',  name: 'SomaFM · Illinois Street Lounge', url: 'https://ice1.somafm.com/illstreet-128-mp3',
+    ads: 'none',  adsText: '0% פרסומות',            license: true,
+    desc: 'לאונג׳ קלאסי וג׳אז קליל, אווירת מלון. ממומן מתרומות מאזינים.' },
+  { key: 'soma_lush',    name: 'SomaFM · Lush',                 url: 'https://ice1.somafm.com/lush-128-mp3',
+    ads: 'none',  adsText: '0% פרסומות',            license: true,
+    desc: 'שירה רכה ואלקטרוני עדין. ממומן מתרומות מאזינים.' },
+  { key: 'paradise',     name: 'Radio Paradise · Mellow',       url: 'https://stream.radioparadise.com/mellow-128',
+    ads: 'none',  adsText: '0% פרסומות (לא מאומת)', license: true,
+    desc: 'מוזיקה רגועה ומגוונת. רדיו שממומן ממאזינים.' },
+  { key: 'kan_classic',  name: 'כאן קול המוסיקה',               url: 'https://kanliveicy.media.kan.org.il/icy/kankolhamusica_mp3',
+    ads: 'maybe', adsText: '0–2% (לא בטוח)',        license: true,
+    desc: 'מוזיקה קלאסית. שידור ציבורי, ייתכנו הודעות חסות קצרות.' },
+  { key: 'kan88',        name: 'כאן 88',                        url: 'https://kanliveicy.media.kan.org.il/icy/kan88_mp3',
+    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
+    desc: 'מוזיקה איכותית, עם חדשות ודיבורים.' },
+  { key: 'glglz',        name: 'גלגלצ',                         url: 'https://glzwizzlv.bynetcdn.com/glglz_mp3',
+    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
+    desc: 'שירים ישראליים ולועזיים, חדשות ותשדירים. בימי זיכרון – בעיקר שירי זיכרון שקטים.' },
+  { key: 'glz',          name: 'גלי צה״ל',                      url: 'https://glzwizzlv.bynetcdn.com/glz_mp3',
+    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
+    desc: 'דיבור, חדשות ומוזיקה. בימי זיכרון – תוכניות זיכרון וסיפורים.' },
+  { key: 'kanbet',       name: 'כאן רשת ב׳',                    url: 'https://kanliveicy.media.kan.org.il/icy/kanbet_mp3',
+    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
+    desc: 'בעיקר חדשות ודיבור. בימי זיכרון – סיפורים ועדויות.' },
+  { key: 'custom',       name: 'קישור משלי / תחנה מסחרית',     url: '',
+    ads: 'many',  adsText: 'בתחנות מסחריות כ־15–20%', license: true,
+    desc: 'מדביקים קישור לכל תחנה אחרת. תחנות מסחריות כוללות הרבה פרסומות ודיבורים – לא מומלץ ללובי.' }
+];
+const MSRC = Object.fromEntries(MUSIC_SOURCES.map(s => [s.key, s]));
+
+// ימים מיוחדים: שקט / רגיל / תחנה מסוימת (שבת וחגים מהתורה – תמיד שקט)
+const MUSIC_SPECIAL = [
+  { key: 'shoah',        label: 'יום השואה',      events: ['shoah'],                               def: 'glglz' },
+  { key: 'zikaron',      label: 'יום הזיכרון',    events: ['zikaron'],                             def: 'glglz' },
+  { key: 'tishabav',     label: 'תשעה באב',       events: ['tishabav'],                            def: 'silent' },
+  { key: 'fasts',        label: 'צומות אחרים',    events: ['gedaliah', 'tevet', 'esther', 'tammuz'], def: 'normal' },
+  { key: 'cholhamoed',   label: 'חול המועד',      events: ['cholSukkot', 'cholPesach'],             def: 'normal' },
+  { key: 'yerushalayim', label: 'יום ירושלים',    events: ['yerushalayim'],                        def: 'normal' },
+  { key: 'atzmaut',      label: 'יום העצמאות',    events: ['atzmaut'],                             def: 'normal' }
+];
+const MUSIC_DEFAULTS = { enabled: false, source: 'soma_groove', customUrl: '', volume: 60, muted: false, hoursFrom: '07:00', hoursTo: '22:00', special: {}, licenseAck: false };
+
 const ICONS = ['📢','⚠️','🔧','🧹','🛗','💧','⚡','🔥','🎉','🗑️','🅿️','📦','🔒','🌳','💰','🕯️','❤️','🏠'];
 const PR = { urgent: 3, important: 2, normal: 1 };
 const PR_LABEL = { normal: 'רגילה', important: 'חשובה', urgent: 'דחופה' };
@@ -721,8 +886,9 @@ function enter() {
   entered = true;
   base = db.ref('lobby/' + CONFIG.BUILDING_ID);
   base.child('messages').on('value', s => { msgs = s.val() || {}; renderList(); });
-  base.child('settings').on('value', s => { settings = s.val() || {}; fillSettings(); renderList(); });
-  base.child('status/lastSeen').on('value', s => { lastSeen = s.val() || 0; renderStatus(); });
+  base.child('settings').on('value', s => { settings = s.val() || {}; fillSettings(); renderList(); renderMusic(); });
+  base.child('status/lastSeen').on('value', s => { lastSeen = s.val() || 0; renderStatus(); renderMusic(); });
+  base.child('status/music').on('value', s => { mStatus = s.val(); renderMusic(); });
   setInterval(renderStatus, 30000);
   setInterval(renderList, 60000);
   if (Cal.fromCache('admin_cal')) renderList();
@@ -771,9 +937,9 @@ function renderStatus() {
 $$('.tab').forEach(t => t.addEventListener('click', () => {
   $$('.tab').forEach(x => x.classList.toggle('active', x === t));
   const tab = t.dataset.tab;
-  $('#pane-msgs').classList.toggle('hidden', tab !== 'msgs');
-  $('#pane-settings').classList.toggle('hidden', tab !== 'settings');
+  ['msgs', 'music', 'settings'].forEach(k => $('#pane-' + k).classList.toggle('hidden', tab !== k));
   $('#fab').classList.toggle('hidden', tab !== 'msgs');
+  if (tab === 'music') renderMusic();
 }));
 
 /* ===== רשימת הודעות ===== */
@@ -1142,6 +1308,168 @@ $('#gRestore').addEventListener('click', async () => {
   try { await base.child('settings/greetings/' + k).set({ on: cur.on !== false }); toast('שוחזר לנוסח המקורי'); closeGreetEditor(); }
   catch (e) { toast('שגיאה בשמירה'); }
 });
+
+
+/* ===== מוזיקה ===== */
+let mStatus = null, testAudio = null, testKey = null;
+function mcfg() {
+  const c = Object.assign({}, MUSIC_DEFAULTS, settings.music || {});
+  c.special = Object.assign({}, (settings.music || {}).special || {});
+  return c;
+}
+function mSave(data, msg) {
+  return base.child('settings/music').update(data).then(() => { if (msg) toast(msg); }).catch(() => toast('שגיאה בשמירה'));
+}
+function mCmd(action) {
+  return base.child('settings/musicCmd').set({ action, at: firebase.database.ServerValue.TIMESTAMP });
+}
+const ADS_ICON = { none: '✅', maybe: '⚠️', some: '⚠️', many: '❌' };
+
+function renderMusic() {
+  if (!$('#pane-music')) return;
+  const c = mcfg();
+  // סטטוס
+  const st = mStatus || {};
+  const fresh = st.at && (Date.now() - st.at < 3 * 3600e3);
+  const screenOn = lastSeen && Date.now() - lastSeen < 5 * 60e3;
+  const map = {
+    playing: '🎵 מנגן עכשיו', paused: '⏸ נעצר מרחוק', silent: '🔇 שקט', blocked: '⚠️ ממתין ללחיצת OK במסך',
+    error: '❌ בעיה', off: '⚪ המוזיקה כבויה'
+  };
+  let stText = !screenOn ? '🔴 המסך לא מחובר' : (st.state ? map[st.state] || st.state : '⚪ אין עדיין דיווח מהמסך');
+  if (screenOn && st.reason && st.state !== 'playing') stText += ' · ' + st.reason;
+  $('#msState').textContent = stText;
+  $('#msTrack').textContent = screenOn && st.state === 'playing'
+    ? (st.track || '') + (st.special ? ' · ' + st.special : '') : '';
+  $('#mEnabled').checked = !!c.enabled;
+  if (document.activeElement !== $('#mVol')) $('#mVol').value = c.volume;
+  $('#mVolVal').textContent = c.volume + '%';
+  $('#mMute').textContent = c.muted ? '🔈 בטל השתקה' : '🔇 השתק';
+  $('#mMute').classList.toggle('on', !!c.muted);
+
+  // מקורות
+  const box = $('#mSources'); box.innerHTML = '';
+  MUSIC_SOURCES.forEach(src => {
+    const card = document.createElement('div');
+    card.className = 'src-card' + (c.source === src.key ? ' sel' : '');
+    card.innerHTML = `<div class="src-radio"></div>
+      <div class="src-main"><b></b>
+        <div class="src-tags"><span class="t free">🆓 חינם</span><span class="t ads-${src.ads}"></span>${src.license ? '<span class="t lic">⚖️ ייתכן שנדרש רישיון</span>' : ''}</div>
+        <div class="src-desc"></div></div>
+      ${src.url ? '<button class="src-test" title="האזנה בטלפון">▶</button>' : ''}`;
+    card.querySelector('b').textContent = src.name;
+    card.querySelector('.t.ads-' + src.ads).textContent = ADS_ICON[src.ads] + ' ' + src.adsText;
+    card.querySelector('.src-desc').textContent = src.desc;
+    card.onclick = e => {
+      if (e.target.closest('.src-test')) return;
+      if (c.source !== src.key) mSave({ source: src.key }, 'המקור עודכן – ' + src.name);
+    };
+    const tb = card.querySelector('.src-test');
+    if (tb) {
+      if (testKey === src.key) tb.textContent = '⏹';
+      tb.onclick = e => { e.stopPropagation(); testPlay(src.key, src.url); };
+    }
+    box.appendChild(card);
+  });
+  $('#mCustomBox').classList.toggle('hidden', c.source !== 'custom');
+  if (document.activeElement !== $('#mCustomUrl')) $('#mCustomUrl').value = c.customUrl || '';
+
+  // רשימה שלי
+  const pl = $('#mPlaylist'); pl.innerHTML = '';
+  const items = Object.entries(settings.playlist || {}).map(([id, t]) => Object.assign({ id }, t))
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+  if (!items.length) pl.innerHTML = '<div class="empty" style="padding:14px">הרשימה ריקה</div>';
+  items.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'pl-row' + (t.active === false ? ' off' : '');
+    row.innerHTML = `<input type="checkbox" title="פעיל"><div class="pl-main"><div class="pl-t"></div><div class="pl-u"></div></div>
+      <button data-a="test">▶</button><button data-a="up">↑</button><button data-a="down">↓</button><button data-a="del" class="danger">🗑️</button>`;
+    row.querySelector('.pl-t').textContent = t.title || '(ללא שם)';
+    row.querySelector('.pl-u').textContent = t.url;
+    const cb = row.querySelector('input'); cb.checked = t.active !== false;
+    cb.onchange = () => base.child('settings/playlist/' + t.id + '/active').set(cb.checked);
+    const tb = row.querySelector('[data-a=test]'); if (testKey === 'pl_' + t.id) tb.textContent = '⏹';
+    tb.onclick = () => testPlay('pl_' + t.id, t.url);
+    row.querySelector('[data-a=up]').onclick = () => movePl(items, i, -1);
+    row.querySelector('[data-a=down]').onclick = () => movePl(items, i, 1);
+    row.querySelector('[data-a=del]').onclick = () => {
+      if (confirm('למחוק את השיר מהרשימה?')) base.child('settings/playlist/' + t.id).remove().then(() => toast('נמחק'));
+    };
+    pl.appendChild(row);
+  });
+
+  // שעות
+  if (document.activeElement !== $('#mFrom')) $('#mFrom').value = c.hoursFrom || '';
+  if (document.activeElement !== $('#mTo')) $('#mTo').value = c.hoursTo || '';
+
+  // ימים מיוחדים
+  const sp = $('#mSpecial'); sp.innerHTML = '';
+  MUSIC_SPECIAL.forEach(sd => {
+    const row = document.createElement('div'); row.className = 'sp-row';
+    row.innerHTML = '<span></span><select></select>';
+    row.querySelector('span').textContent = sd.label;
+    const sel = row.querySelector('select');
+    [['silent', '🔇 שקט'], ['normal', '🎵 רגיל (המקור שנבחר)']]
+      .concat(MUSIC_SOURCES.filter(s => s.url).map(s => [s.key, '📻 ' + s.name]))
+      .forEach(([v, l]) => { const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o); });
+    sel.value = c.special[sd.key] || sd.def;
+    sel.onchange = () => base.child('settings/music/special/' + sd.key).set(sel.value).then(() => toast('נשמר – ' + sd.label));
+    sp.appendChild(row);
+  });
+
+  $('#mAck').checked = !!c.licenseAck;
+}
+function movePl(items, i, dir) {
+  const j = i + dir; if (j < 0 || j >= items.length) return;
+  const upd = {};
+  items.forEach((t, k) => { upd[t.id + '/order'] = k; });
+  upd[items[i].id + '/order'] = j; upd[items[j].id + '/order'] = i;
+  base.child('settings/playlist').update(upd);
+}
+function testPlay(key, url) {
+  if (!testAudio) {
+    testAudio = new Audio();
+    testAudio.addEventListener('error', () => { if (testKey) { toast('❌ לא מתנגן – ייתכן שהקישור לא תקין או חסום'); testKey = null; renderMusic(); } });
+    testAudio.addEventListener('playing', () => toast('✅ מתנגן'));
+  }
+  if (testKey === key) { testAudio.pause(); testKey = null; renderMusic(); return; }
+  testKey = key;
+  testAudio.src = /^https?:\/\//i.test(url) ? url : new URL(url.replace(/^\//, ''), location.href).href;
+  testAudio.volume = 1;
+  const p = testAudio.play(); if (p && p.catch) p.catch(() => {});
+  toast('טוען…');
+  renderMusic();
+}
+
+$('#mEnabled').addEventListener('change', e => mSave({ enabled: e.target.checked }, e.target.checked ? 'המוזיקה הופעלה' : 'המוזיקה כובתה'));
+$('#mVol').addEventListener('input', e => { $('#mVolVal').textContent = e.target.value + '%'; });
+$('#mVol').addEventListener('change', e => mSave({ volume: +e.target.value }, 'עוצמה: ' + e.target.value + '%'));
+$('#mMute').addEventListener('click', () => { const m = !mcfg().muted; mSave({ muted: m }, m ? 'הושתק' : 'ההשתקה בוטלה'); });
+$('#mPlay').addEventListener('click', async () => {
+  if (!mcfg().enabled) await mSave({ enabled: true });
+  mCmd('play').then(() => toast('נשלחה הפעלה למסך'));
+});
+$('#mPause').addEventListener('click', () => mCmd('pause').then(() => toast('נשלחה עצירה למסך')));
+$('#mNext').addEventListener('click', () => mCmd('next').then(() => toast('הבא ⏭')));
+$('#mCustomSave').addEventListener('click', () => {
+  const u = $('#mCustomUrl').value.trim();
+  if (!/^https?:\/\//i.test(u)) { toast('הקישור צריך להתחיל ב־https://'); return; }
+  mSave({ customUrl: u }, 'הקישור נשמר');
+});
+$('#mCustomTest').addEventListener('click', () => { const u = $('#mCustomUrl').value.trim(); if (u) testPlay('custom', u); });
+$('#mpTest').addEventListener('click', () => { const u = $('#mpUrl').value.trim(); if (u) testPlay('new', u); });
+$('#mpAdd').addEventListener('click', async () => {
+  const url = $('#mpUrl').value.trim(), title = $('#mpTitle').value.trim();
+  if (!url) { toast('נא להדביק קישור'); return; }
+  const n = Object.keys(settings.playlist || {}).length;
+  try {
+    await base.child('settings/playlist').push({ title: title || decodeURIComponent(url.split('/').pop()), url, active: true, order: n });
+    $('#mpUrl').value = ''; $('#mpTitle').value = '';
+    toast('השיר נוסף לרשימה');
+  } catch (e) { toast('שגיאה בשמירה'); }
+});
+$('#mHoursSave').addEventListener('click', () => mSave({ hoursFrom: $('#mFrom').value || '', hoursTo: $('#mTo').value || '' }, 'שעות ההשמעה נשמרו'));
+$('#mAck').addEventListener('change', e => mSave({ licenseAck: e.target.checked }));
 
 /* ===== הגדרות ===== */
 function fillSettings() {
