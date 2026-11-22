@@ -150,6 +150,7 @@ input[type=range]{width:100%;accent-color:var(--gold);padding:0;background:none;
 .sp-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
 .sp-row:last-child{border-bottom:0}
 .sp-row span{font-weight:600}
+.sp-row input.sw{width:22px;height:22px;accent-color:var(--gold)}
 .sp-row select{background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:10px;padding:9px;max-width:60%}
 .warn-box{background:rgba(255,180,77,.08);border:1px solid rgba(255,180,77,.35);border-radius:14px;padding:14px;margin:14px 0;font-size:13.5px;line-height:1.6;color:#f3dcb4}
 .warn-box b{color:#ffc876;font-size:15px}
@@ -317,7 +318,11 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
 
     <div class="section-title">📅 ימים מיוחדים</div>
     <div class="set-card">
-      <div class="hint" style="padding-top:10px">🕯️ בשבת ובחגים מהתורה (ראש השנה, יום כיפור, סוכות, שמיני עצרת, פסח ראשון ושביעי, שבועות) – תמיד שקט, מהדלקת הנרות עד הצאת.</div>
+      <label class="sp-row" style="padding-top:12px"><span>🕯️ מוזיקה בשבת</span><input type="checkbox" id="mShabbat" class="sw"></label>
+      <label class="sp-row"><span>🕍 מוזיקה בחגים</span><input type="checkbox" id="mChag" class="sw"></label>
+      <div class="sp-row hidden" id="mHolySrcRow"><span>מה ינוגן בשבת/חג</span><select id="mHolySrc"></select></div>
+      <div class="hint" style="padding-bottom:8px">כבוי = שקט מהדלקת הנרות עד הצאת. חגים: ראש השנה, סוכות, שמיני עצרת, פסח (ראשון ושביעי), שבועות.<br>
+        🔒 יום כיפור – תמיד שקט, גם בפקודה מרחוק. שעות ההשמעה חלות גם בשבת ובחג.</div>
       <div id="mSpecial"></div>
     </div>
 
@@ -619,7 +624,7 @@ const Cal = {
       const isSat = Cal.day(ds).getDay() === 6;
       const yt = ytOn[ds] || (!isSat ? (ytOn[Cal.plus(ds, -1)] || ytOn[Cal.plus(ds, 1)]) : null);
       const kind = yt ? 'yt' : 'shabbat';
-      holy.push({ start, end, kind });
+      holy.push({ start, end, kind, key: yt || 'shabbat', sat: isSat });
       if (yt) ev.push({ key: yt, name: '', start, end, shabbat: isSat });
       else ev.push({ key: 'shabbat', name: '', start, end });
     }
@@ -709,6 +714,7 @@ const Cal = {
   },
 
   isHoly(t) { return Cal.holy.some(h => h.start <= t && t < h.end); },
+  holyAt(t) { return Cal.holy.find(h => h.start <= t && t < h.end) || null; },
   nextHoly(t) { const h = Cal.holy.find(x => x.start > t); return h ? h.start : null; }
 };
 
@@ -776,55 +782,120 @@ const Rep = {
 /* =========================================================
    מוזיקה – מקורות וימים מיוחדים
    ========================================================= */
-// ads: none | maybe | some | many
+// ads: none | maybe | some | many   ·   urls: ראשי ואחריו גיבויים
 const MUSIC_SOURCES = [
-  { key: 'playlist',     name: 'הרשימה שלי',                    url: '',
-    ads: 'none',  adsText: '0% פרסומות',            license: false,
+  { key: 'playlist',      name: 'הרשימה שלי',                      urls: [],
+    ads: 'none',  adsText: '0% פרסומות',                 license: false, group: 'quiet',
     desc: 'שירים שאתה בוחר (קישורי MP3), בניגון אקראי. מומלץ: מוזיקה חופשית לשימוש מ־Pixabay Music.' },
-  { key: 'soma_groove',  name: 'SomaFM · Groove Salad',         url: 'https://ice1.somafm.com/groovesalad-128-mp3',
-    ads: 'none',  adsText: '0% פרסומות',            license: true,
-    desc: 'אמביינט ו־downtempo רגוע ברצף. רדיו אינטרנט שממומן מתרומות מאזינים.' },
-  { key: 'soma_lounge',  name: 'SomaFM · Illinois Street Lounge', url: 'https://ice1.somafm.com/illstreet-128-mp3',
-    ads: 'none',  adsText: '0% פרסומות',            license: true,
+  { key: 'soma_groove',   name: 'SomaFM · Groove Salad',           urls: ['https://ice1.somafm.com/groovesalad-128-mp3', 'https://ice2.somafm.com/groovesalad-128-mp3'],
+    ads: 'none',  adsText: '0% פרסומות',                 license: true,  group: 'quiet',
+    desc: 'אמביינט ו־downtempo רגוע ברצף. ממומן מתרומות מאזינים.' },
+  { key: 'soma_lounge',   name: 'SomaFM · Illinois Street Lounge', urls: ['https://ice1.somafm.com/illstreet-128-mp3', 'https://ice2.somafm.com/illstreet-128-mp3'],
+    ads: 'none',  adsText: '0% פרסומות',                 license: true,  group: 'quiet',
     desc: 'לאונג׳ קלאסי וג׳אז קליל, אווירת מלון. ממומן מתרומות מאזינים.' },
-  { key: 'soma_lush',    name: 'SomaFM · Lush',                 url: 'https://ice1.somafm.com/lush-128-mp3',
-    ads: 'none',  adsText: '0% פרסומות',            license: true,
+  { key: 'soma_lush',     name: 'SomaFM · Lush',                   urls: ['https://ice1.somafm.com/lush-128-mp3', 'https://ice2.somafm.com/lush-128-mp3'],
+    ads: 'none',  adsText: '0% פרסומות',                 license: true,  group: 'quiet',
     desc: 'שירה רכה ואלקטרוני עדין. ממומן מתרומות מאזינים.' },
-  { key: 'paradise',     name: 'Radio Paradise · Mellow',       url: 'https://stream.radioparadise.com/mellow-128',
-    ads: 'none',  adsText: '0% פרסומות (לא מאומת)', license: true,
+  { key: 'paradise',      name: 'Radio Paradise · Mellow',         urls: ['https://stream.radioparadise.com/mellow-128', 'https://stream.radioparadise.com/mellow-192'],
+    ads: 'none',  adsText: '0% פרסומות',                 license: true,  group: 'quiet',
     desc: 'מוזיקה רגועה ומגוונת. רדיו שממומן ממאזינים.' },
-  { key: 'kan_classic',  name: 'כאן קול המוסיקה',               url: 'https://kanliveicy.media.kan.org.il/icy/kankolhamusica_mp3',
-    ads: 'maybe', adsText: '0–2% (לא בטוח)',        license: true,
-    desc: 'מוזיקה קלאסית. שידור ציבורי, ייתכנו הודעות חסות קצרות.' },
-  { key: 'kan88',        name: 'כאן 88',                        url: 'https://kanliveicy.media.kan.org.il/icy/kan88_mp3',
-    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
-    desc: 'מוזיקה איכותית, עם חדשות ודיבורים.' },
-  { key: 'glglz',        name: 'גלגלצ',                         url: 'https://glzwizzlv.bynetcdn.com/glglz_mp3',
-    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
+  { key: 'swiss_classic', name: '🎻 Radio Swiss Classic',          urls: ['https://stream.srg-ssr.ch/srgssr/rsc_de/mp3/128', 'https://stream.srg-ssr.ch/srgssr/rsc_fr/mp3/128'],
+    ads: 'none',  adsText: '0% פרסומות',                 license: true,  group: 'quiet',
+    desc: 'מוזיקה קלאסית שקטה ברצף. רדיו ציבורי שווייצרי, קריינות קצרה בלבד.' },
+  { key: 'swiss_jazz',    name: '🎷 Radio Swiss Jazz',             urls: ['https://stream.srg-ssr.ch/srgssr/rsj/mp3/128'],
+    ads: 'none',  adsText: '0% פרסומות',                 license: true,  group: 'quiet',
+    desc: 'ג׳אז רגוע. רדיו ציבורי שווייצרי.' },
+  { key: 'wqxr',          name: '🎻 WQXR ניו יורק',                urls: ['https://stream.wqxr.org/wqxr'],
+    ads: 'maybe', adsText: '0% פרסומות · יש קריינות',     license: true,  group: 'quiet',
+    desc: 'מוזיקה קלאסית, רדיו ציבורי. יש קריינות באנגלית וקריאות לתרומה.' },
+  { key: 'kan88',         name: 'כאן 88',                          urls: ['https://n-121-11.il.cdn-redge.media/livedash/oil/kancdn-live/live/radio/kan_88/live.livx?indexMode&futc&dvr=7200000'],
+    ads: 'some',  adsText: 'מעט (חסויות וחדשות)',          license: true,  group: 'israel',
+    desc: 'מוזיקה איכותית, עם חדשות ודיבורים. שידור ציבורי.' },
+  { key: 'glglz',         name: 'גלגלצ',                           urls: ['https://glzwizzlv.bynetcdn.com/glglz_mp3'],
+    ads: 'some',  adsText: 'כ־5–15% (הערכה)',             license: true,  group: 'israel',
     desc: 'שירים ישראליים ולועזיים, חדשות ותשדירים. בימי זיכרון – בעיקר שירי זיכרון שקטים.' },
-  { key: 'glz',          name: 'גלי צה״ל',                      url: 'https://glzwizzlv.bynetcdn.com/glz_mp3',
-    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
+  { key: 'glz',           name: 'גלי צה״ל',                        urls: ['https://glzwizzlv.bynetcdn.com/glz_mp3', 'https://api.bynetcdn.com/Redirector/glz/glz/ICE-LIVE'],
+    ads: 'some',  adsText: 'כ־5–15% (הערכה)',             license: true,  group: 'israel',
     desc: 'דיבור, חדשות ומוזיקה. בימי זיכרון – תוכניות זיכרון וסיפורים.' },
-  { key: 'kanbet',       name: 'כאן רשת ב׳',                    url: 'https://kanliveicy.media.kan.org.il/icy/kanbet_mp3',
-    ads: 'some',  adsText: 'כ־5–15% (הערכה)',        license: true,
-    desc: 'בעיקר חדשות ודיבור. בימי זיכרון – סיפורים ועדויות.' },
-  { key: 'custom',       name: 'קישור משלי / תחנה מסחרית',     url: '',
-    ads: 'many',  adsText: 'בתחנות מסחריות כ־15–20%', license: true,
-    desc: 'מדביקים קישור לכל תחנה אחרת. תחנות מסחריות כוללות הרבה פרסומות ודיבורים – לא מומלץ ללובי.' }
+  { key: 'kanbet',        name: 'כאן רשת ב׳',                      urls: ['https://kanlivep2event-i.akamaihd.net/hls/live/749624/749624/master.m3u8'],
+    ads: 'some',  adsText: 'מעט (חסויות וחדשות)',          license: true,  group: 'israel',
+    desc: 'בעיקר חדשות ודיבור. בימי זיכרון – סיפורים ועדויות. זרם m3u8 – יעבוד רק אם השרת של כאן מאשר (בדוק עם ▶).' },
+  { key: 'fm99',          name: '99FM',                            urls: ['https://99.mediacast.co.il/99fm_aac'],
+    ads: 'many',  adsText: 'מסחרית · כ־15–20%',           license: true,  group: 'israel',
+    desc: 'תחנה מסחרית. הרבה פרסומות ודיבורים – לא מומלץ ללובי.' },
+  { key: 'galei_israel',  name: 'גלי ישראל',                       urls: ['https://cdn.cybercdn.live/Galei_Israel/Live/icecast.audio'],
+    ads: 'many',  adsText: 'מסחרית · כ־15–20%',           license: true,  group: 'israel',
+    desc: 'תחנה מסחרית. מוזיקה ישראלית ויהודית, הרבה פרסומות ודיבורים.' },
+  { key: 'custom',        name: 'קישור משלי',                      urls: [],
+    ads: 'many',  adsText: 'תלוי בתחנה',                  license: true,  group: 'other',
+    desc: 'מדביקים קישור לכל תחנה אחרת (MP3 / AAC / m3u8).' }
 ];
 const MSRC = Object.fromEntries(MUSIC_SOURCES.map(s => [s.key, s]));
+const MSRC_STREAMS = MUSIC_SOURCES.filter(s => s.urls.length);
 
-// ימים מיוחדים: שקט / רגיל / תחנה מסוימת (שבת וחגים מהתורה – תמיד שקט)
+// ימים מיוחדים: שקט / רגיל / תחנה מסוימת
 const MUSIC_SPECIAL = [
-  { key: 'shoah',        label: 'יום השואה',      events: ['shoah'],                               def: 'glglz' },
-  { key: 'zikaron',      label: 'יום הזיכרון',    events: ['zikaron'],                             def: 'glglz' },
-  { key: 'tishabav',     label: 'תשעה באב',       events: ['tishabav'],                            def: 'silent' },
+  { key: 'shoah',        label: 'יום השואה',      events: ['shoah'],                                 def: 'glglz' },
+  { key: 'zikaron',      label: 'יום הזיכרון',    events: ['zikaron'],                               def: 'glglz' },
+  { key: 'tishabav',     label: 'תשעה באב',       events: ['tishabav'],                              def: 'normal' },
   { key: 'fasts',        label: 'צומות אחרים',    events: ['gedaliah', 'tevet', 'esther', 'tammuz'], def: 'normal' },
-  { key: 'cholhamoed',   label: 'חול המועד',      events: ['cholSukkot', 'cholPesach'],             def: 'normal' },
-  { key: 'yerushalayim', label: 'יום ירושלים',    events: ['yerushalayim'],                        def: 'normal' },
-  { key: 'atzmaut',      label: 'יום העצמאות',    events: ['atzmaut'],                             def: 'normal' }
+  { key: 'cholhamoed',   label: 'חול המועד',      events: ['cholSukkot', 'cholPesach'],              def: 'normal' },
+  { key: 'yerushalayim', label: 'יום ירושלים',    events: ['yerushalayim'],                          def: 'normal' },
+  { key: 'atzmaut',      label: 'יום העצמאות',    events: ['atzmaut'],                               def: 'normal' }
 ];
-const MUSIC_DEFAULTS = { enabled: false, source: 'soma_groove', customUrl: '', volume: 60, muted: false, hoursFrom: '07:00', hoursTo: '22:00', special: {}, licenseAck: false };
+const MUSIC_DEFAULTS = {
+  enabled: false, source: 'soma_groove', customUrl: '', volume: 60, muted: false,
+  hoursFrom: '07:00', hoursTo: '22:00', special: {}, licenseAck: false,
+  shabbatAllowed: false, chagAllowed: false, holySource: 'same'
+};
+function musicCfg(raw) {
+  const c = Object.assign({}, MUSIC_DEFAULTS, raw || {});
+  c.special = Object.assign({}, (raw || {}).special || {});
+  if (!MSRC[c.source]) c.source = MUSIC_DEFAULTS.source;            // מקור ישן שהוסר
+  if (c.holySource !== 'same' && !MSRC[c.holySource]) c.holySource = 'same';
+  return c;
+}
+function sourceUrls(key, cfg) {
+  if (key === 'custom') return cfg.customUrl ? [cfg.customUrl] : [];
+  return (MSRC[key] || {}).urls || [];
+}
+
+/* ===== נגינת קישור – כולל m3u8 דרך hls.js ===== */
+let hlsLoading = null;
+function loadHlsLib() {
+  if (window.Hls) return Promise.resolve(window.Hls);
+  if (hlsLoading) return hlsLoading;
+  const tryLoad = src => new Promise((ok, fail) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = () => window.Hls ? ok(window.Hls) : fail(); s.onerror = fail;
+    document.head.appendChild(s);
+  });
+  hlsLoading = tryLoad('https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.15/hls.min.js')
+    .catch(() => tryLoad('https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js'))
+    .catch(e => { hlsLoading = null; throw e; });
+  return hlsLoading;
+}
+const isHlsUrl = u => /\.m3u8(\?|$)/i.test(u);
+function resolveUrl(u) { return /^https?:\/\//i.test(u) ? u : new URL(u.replace(/^\//, ''), location.href).href; }
+// מחבר קישור לנגן. onFatal נקרא כשהקישור לא מתנגן. מחזיר פונקציית ניקוי
+async function attachSource(audio, url, onFatal) {
+  url = resolveUrl(url);
+  if (isHlsUrl(url)) {
+    try {
+      const Hls = await loadHlsLib();
+      if (Hls.isSupported()) {
+        const hls = new Hls({ liveDurationInfinity: true });
+        hls.on(Hls.Events.ERROR, (e, d) => { if (d && d.fatal) onFatal(); });
+        hls.loadSource(url);
+        hls.attachMedia(audio);
+        return () => { try { hls.destroy(); } catch (e) {} };
+      }
+    } catch (e) {}
+    if (!audio.canPlayType('application/vnd.apple.mpegurl')) { onFatal(); return () => {}; }
+  }
+  audio.src = url;
+  return () => {};
+}
 
 const ICONS = ['📢','⚠️','🔧','🧹','🛗','💧','⚡','🔥','🎉','🗑️','🅿️','📦','🔒','🌳','💰','🕯️','❤️','🏠'];
 const PR = { urgent: 3, important: 2, normal: 1 };
@@ -1312,11 +1383,7 @@ $('#gRestore').addEventListener('click', async () => {
 
 /* ===== מוזיקה ===== */
 let mStatus = null, testAudio = null, testKey = null;
-function mcfg() {
-  const c = Object.assign({}, MUSIC_DEFAULTS, settings.music || {});
-  c.special = Object.assign({}, (settings.music || {}).special || {});
-  return c;
-}
+function mcfg() { return musicCfg(settings.music); }
 function mSave(data, msg) {
   return base.child('settings/music').update(data).then(() => { if (msg) toast(msg); }).catch(() => toast('שגיאה בשמירה'));
 }
@@ -1356,7 +1423,7 @@ function renderMusic() {
       <div class="src-main"><b></b>
         <div class="src-tags"><span class="t free">🆓 חינם</span><span class="t ads-${src.ads}"></span>${src.license ? '<span class="t lic">⚖️ ייתכן שנדרש רישיון</span>' : ''}</div>
         <div class="src-desc"></div></div>
-      ${src.url ? '<button class="src-test" title="האזנה בטלפון">▶</button>' : ''}`;
+      ${src.urls.length ? '<button class="src-test" title="האזנה בטלפון">▶</button>' : ''}`;
     card.querySelector('b').textContent = src.name;
     card.querySelector('.t.ads-' + src.ads).textContent = ADS_ICON[src.ads] + ' ' + src.adsText;
     card.querySelector('.src-desc').textContent = src.desc;
@@ -1367,7 +1434,7 @@ function renderMusic() {
     const tb = card.querySelector('.src-test');
     if (tb) {
       if (testKey === src.key) tb.textContent = '⏹';
-      tb.onclick = e => { e.stopPropagation(); testPlay(src.key, src.url); };
+      tb.onclick = e => { e.stopPropagation(); testPlay(src.key, src.urls); };
     }
     box.appendChild(card);
   });
@@ -1389,7 +1456,7 @@ function renderMusic() {
     const cb = row.querySelector('input'); cb.checked = t.active !== false;
     cb.onchange = () => base.child('settings/playlist/' + t.id + '/active').set(cb.checked);
     const tb = row.querySelector('[data-a=test]'); if (testKey === 'pl_' + t.id) tb.textContent = '⏹';
-    tb.onclick = () => testPlay('pl_' + t.id, t.url);
+    tb.onclick = () => testPlay('pl_' + t.id, [t.url]);
     row.querySelector('[data-a=up]').onclick = () => movePl(items, i, -1);
     row.querySelector('[data-a=down]').onclick = () => movePl(items, i, 1);
     row.querySelector('[data-a=del]').onclick = () => {
@@ -1410,12 +1477,23 @@ function renderMusic() {
     row.querySelector('span').textContent = sd.label;
     const sel = row.querySelector('select');
     [['silent', '🔇 שקט'], ['normal', '🎵 רגיל (המקור שנבחר)']]
-      .concat(MUSIC_SOURCES.filter(s => s.url).map(s => [s.key, '📻 ' + s.name]))
+      .concat(MSRC_STREAMS.map(s => [s.key, '📻 ' + s.name]))
       .forEach(([v, l]) => { const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o); });
     sel.value = c.special[sd.key] || sd.def;
     sel.onchange = () => base.child('settings/music/special/' + sd.key).set(sel.value).then(() => toast('נשמר – ' + sd.label));
     sp.appendChild(row);
   });
+
+  // שבת וחגים
+  $('#mShabbat').checked = !!c.shabbatAllowed;
+  $('#mChag').checked = !!c.chagAllowed;
+  const hs = $('#mHolySrc');
+  if (!hs.options.length) {
+    [['same', '🎵 המקור הרגיל']].concat(MUSIC_SOURCES.filter(s => s.urls.length || s.key === 'playlist').map(s => [s.key, '📻 ' + s.name]))
+      .forEach(([v, l]) => { const o = document.createElement('option'); o.value = v; o.textContent = l; hs.appendChild(o); });
+  }
+  hs.value = c.holySource;
+  $('#mHolySrcRow').classList.toggle('hidden', !(c.shabbatAllowed || c.chagAllowed));
 
   $('#mAck').checked = !!c.licenseAck;
 }
@@ -1426,18 +1504,39 @@ function movePl(items, i, dir) {
   upd[items[i].id + '/order'] = j; upd[items[j].id + '/order'] = i;
   base.child('settings/playlist').update(upd);
 }
-function testPlay(key, url) {
+let testClean = null, testSeq = 0;
+async function testPlay(key, urls) {
   if (!testAudio) {
     testAudio = new Audio();
-    testAudio.addEventListener('error', () => { if (testKey) { toast('❌ לא מתנגן – ייתכן שהקישור לא תקין או חסום'); testKey = null; renderMusic(); } });
-    testAudio.addEventListener('playing', () => toast('✅ מתנגן'));
+    testAudio.addEventListener('playing', () => { if (testKey) toast('✅ מתנגן'); });
   }
-  if (testKey === key) { testAudio.pause(); testKey = null; renderMusic(); return; }
+  const stop = () => { testSeq++; testAudio.pause(); if (testClean) { testClean(); testClean = null; } testAudio.removeAttribute('src'); };
+  if (testKey === key) { stop(); testKey = null; renderMusic(); return; }
+  stop();
   testKey = key;
-  testAudio.src = /^https?:\/\//i.test(url) ? url : new URL(url.replace(/^\//, ''), location.href).href;
-  testAudio.volume = 1;
-  const p = testAudio.play(); if (p && p.catch) p.catch(() => {});
+  renderMusic();
   toast('טוען…');
+  const seq = testSeq;
+  for (let i = 0; i < urls.length; i++) {
+    if (seq !== testSeq) return;
+    const ok = await new Promise(async res => {
+      let done = false, t = null;
+      const onP = () => fin(true), onE = () => fin(false);
+      function fin(v) { if (!done) { done = true; testAudio.removeEventListener('playing', onP); testAudio.removeEventListener('error', onE); clearTimeout(t); res(v); } }
+      testAudio.addEventListener('playing', onP);
+      testAudio.addEventListener('error', onE);
+      t = setTimeout(() => fin(false), 15000);
+      if (testClean) { testClean(); testClean = null; }
+      testClean = await attachSource(testAudio, urls[i], () => fin(false));
+      testAudio.volume = 1;
+      const p = testAudio.play(); if (p && p.catch) p.catch(e => { if (!e || e.name !== 'AbortError') fin(false); });
+    });
+    if (seq !== testSeq) return;
+    if (ok) { if (i > 0) toast('✅ מתנגן (מכתובת הגיבוי)'); return; }
+  }
+  if (seq !== testSeq) return;
+  stop(); testKey = null;
+  toast('❌ לא מתנגן – הקישור לא תקין או חסום');
   renderMusic();
 }
 
@@ -1456,8 +1555,17 @@ $('#mCustomSave').addEventListener('click', () => {
   if (!/^https?:\/\//i.test(u)) { toast('הקישור צריך להתחיל ב־https://'); return; }
   mSave({ customUrl: u }, 'הקישור נשמר');
 });
-$('#mCustomTest').addEventListener('click', () => { const u = $('#mCustomUrl').value.trim(); if (u) testPlay('custom', u); });
-$('#mpTest').addEventListener('click', () => { const u = $('#mpUrl').value.trim(); if (u) testPlay('new', u); });
+$('#mCustomTest').addEventListener('click', () => { const u = $('#mCustomUrl').value.trim(); if (u) testPlay('custom', [u]); });
+$('#mpTest').addEventListener('click', () => { const u = $('#mpUrl').value.trim(); if (u) testPlay('new', [u]); });
+$('#mShabbat').addEventListener('change', e => {
+  if (e.target.checked && !confirm('האם הדיירים הסכימו להשמעת מוזיקה בשבת?')) { e.target.checked = false; return; }
+  mSave({ shabbatAllowed: e.target.checked }, e.target.checked ? 'מוזיקה בשבת – מותר' : 'בשבת – שקט');
+});
+$('#mChag').addEventListener('change', e => {
+  if (e.target.checked && !confirm('האם הדיירים הסכימו להשמעת מוזיקה בחגים?\n(יום כיפור נשאר תמיד שקט)')) { e.target.checked = false; return; }
+  mSave({ chagAllowed: e.target.checked }, e.target.checked ? 'מוזיקה בחגים – מותר' : 'בחגים – שקט');
+});
+$('#mHolySrc').addEventListener('change', e => mSave({ holySource: e.target.value }, 'נשמר'));
 $('#mpAdd').addEventListener('click', async () => {
   const url = $('#mpUrl').value.trim(), title = $('#mpTitle').value.trim();
   if (!url) { toast('נא להדביק קישור'); return; }
